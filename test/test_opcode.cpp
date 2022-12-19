@@ -1,11 +1,11 @@
-#include "opcode.h"
 #include <iostream>
 #include <algorithm>
-#include <cassert>
 #include <iomanip>
-// TODO: Add real test fw :)
+#include <gtest/gtest.h>
 
-bool TestOpcodeOverlap()
+#include <opcode.h>
+
+TEST(TestOpCodes_Overlapping, BasicAssertions)
 {
     std::array<uint8_t, 0xffff> usedOpcode;
     usedOpcode.fill(0);
@@ -20,19 +20,8 @@ bool TestOpcodeOverlap()
         std::cout << std::hex << opName << " 0x" << std::setfill('0') << std::setw(4) << opCodeStart << " 0x" << std::setfill('0') << std::setw(4) << nextOpCode << std::endl;
         for (auto i = opCodeStart; i < nextOpCode; ++i)
         {
-            assert(usedOpcode[i] == 0);
+            ASSERT_EQ(usedOpcode[i], 0);
             usedOpcode[i] = 1;
         }
-    }
-    return true;
-}
-
-int main()
-{
-    unsigned failed = 0;
-    if (!TestOpcodeOverlap())
-    {
-        failed++;
-        std::cout << "TestOpcodeOverlap failed" << std::endl;
     }
 }
