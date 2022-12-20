@@ -44,6 +44,10 @@
 		"xstddef": "cpp",
 		"xstring": "cpp",
 		"xtr1common": "cpp",
-		"xutility": "cpp"
-	}
+		"xutility": "cpp",
+		"iomanip": "cpp"
+	},
+	"C_Cpp.formatting": "clangFormat",
+	"C_Cpp.clang_format_fallbackStyle": "Microsoft",
+	"editor.defaultFormatter": "ms-vscode.cpptools-extension-pack"
 }
