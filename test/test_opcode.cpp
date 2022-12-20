@@ -10,11 +10,14 @@ TEST(TestOpCodes_Overlapping, BasicAssertions)
     std::array<uint8_t, 0x10000> usedOpcode;
     usedOpcode.fill(0);
 
-    for (auto &opCode : opCodeTable)
+    for (auto i = opCodeTable.begin(); i != opCodeTable.end(); ++i)
     {
-        const auto opName = std::get<0>(opCode);
-        const auto nOperands = std::get<2>(opCode);
-        auto opCodeStart = std::get<1>(opCode) << (nOperands * 4);
+        const auto opName = i->first;
+        const auto opCodeStruct = i->second;
+        const auto nOperands = opCodeStruct.argCount;
+        const auto opCode = opCodeStruct.opCode;
+
+        auto opCodeStart = opCode << (nOperands * 4);
 
         const auto nextOpCode = opCodeStart + (1 << (nOperands * 4));
         std::cout << std::hex << opName << " 0x" << std::setfill('0') << std::setw(4) << opCodeStart << " 0x"
