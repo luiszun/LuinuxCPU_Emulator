@@ -35,13 +35,13 @@ uint16_t Assembler::GetValueFromStringLiteral(std::string literal)
         ssLiteral >> std::hex >> unsignedValue;
         return unsignedValue;
     }
-    if (!std::regex_match(literal, std::regex("[0-9]*")))
+    if (!std::regex_match(literal, std::regex("[-]?[0-9]*")))
     {
         throw std::invalid_argument("Invalid hex number " + literal);
     }
 
     std::stringstream ssLiteral(literal);
-    if (literal.find("-"))
+    if (literal.find("-") != std::string::npos)
     {
         // Keep the bit ordering
         ssLiteral >> signedValue;
@@ -99,6 +99,10 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction)
         _literalValue = GetValueFromStringLiteral(stringLiteral);
         _pendingLiteralValue = true;
 
+        if (!line.eof())
+        {
+            throw std::runtime_error("Instruction has more operators than expected.");
+        }
         return EncodeInstructionWord(opCode, registerArgs);
     }
 
@@ -111,6 +115,11 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction)
         }
 
         registerArgs[i] = reinterpret_cast<RegisterId>(registerMap[stringArgs[i]]);
+    }
+
+    if (!line.eof())
+    {
+        throw std::runtime_error("Instruction has more operators than expected.");
     }
     return EncodeInstructionWord(opCode, registerArgs);
 }
