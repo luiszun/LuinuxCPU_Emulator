@@ -62,14 +62,24 @@ uint16_t Assembler::_WordToBigEndian(uint16_t word)
     return result;
 }
 
-uint16_t Assembler::EncodeInstructionWord(std::string instruction)
+uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t instIndex)
 {
+    instruction = _RemoveComments(instruction);
     // We have at max 3 arguments on any instruction
     std::array<std::string, 3> stringArgs;
     std::array<RegisterId, 3> registerArgs;
 
     // Let's remove any commas first
     std::replace(instruction.begin(), instruction.end(), ',', ' ');
+
+    // Let's check for goto tags
+    if (instruction.find("goto:") != std::string::npos)
+    {
+        instruction = std::regex_replace(instruction, std::regex("goto:"), "SET ");
+        // + 2 because the set will take 2 words. And we want to goto the instruction next, not the SET
+        instruction = instruction + " " + std::to_string(instIndex + 2);
+    }
+
     std::stringstream line(instruction);
     std::string mnemonic;
     line >> mnemonic;
@@ -99,7 +109,8 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction)
         _literalValue = GetValueFromStringLiteral(stringLiteral);
         _pendingLiteralValue = true;
 
-        if (!line.eof())
+        // Check if it has anything other than spaces or \n
+        if (line >> stringArgs[0])
         {
             throw std::runtime_error("Instruction has more operators than expected.");
         }
@@ -117,7 +128,8 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction)
         registerArgs[i] = reinterpret_cast<RegisterId>(registerMap[stringArgs[i]]);
     }
 
-    if (!line.eof())
+    // Check if it has anything other than spaces or \n
+    if (line >> stringArgs[0])
     {
         throw std::runtime_error("Instruction has more operators than expected.");
     }
@@ -178,4 +190,9 @@ bool Assembler::_IsSpecialInstruction(OpCodeId id)
 {
     // Remember that SET, and SET_M are special commands. We'll process them separately
     return (id == OpCodeId::SET) || (id == OpCodeId::SET_M);
+}
+
+std::string Assembler::_RemoveComments(std::string str)
+{
+    return str.substr(0, str.find(";"));
 }

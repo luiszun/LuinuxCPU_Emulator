@@ -1,6 +1,19 @@
 #include "assembler.h"
 #include <gtest/gtest.h>
 
+class TestAssembler : public Assembler
+{
+  public:
+    bool HasPendingLiteral()
+    {
+        return _pendingLiteralValue;
+    }
+    uint16_t GetPendingLiteral()
+    {
+        return _literalValue;
+    }
+};
+
 TEST(TestEncodeWord, BasicAssertions)
 {
     Assembler asmObj;
@@ -8,10 +21,10 @@ TEST(TestEncodeWord, BasicAssertions)
     auto word = asmObj.EncodeInstructionWord("NOP");
     ASSERT_EQ(word, 0x7690);
 
-    word = asmObj.EncodeInstructionWord("SHFL R10");
+    word = asmObj.EncodeInstructionWord("SHFL R10 ; A shift with a comment");
     ASSERT_EQ(word, 0x767f);
 
-    word = asmObj.EncodeInstructionWord("MOV R0, R5");
+    word = asmObj.EncodeInstructionWord("MOV R0, R5 ");
     ASSERT_EQ(word, 0x725a);
 
     word = asmObj.EncodeInstructionWord("AND R0, R1, R2");
@@ -20,7 +33,23 @@ TEST(TestEncodeWord, BasicAssertions)
     word = asmObj.EncodeInstructionWord("SET R0, h'1010");
     ASSERT_EQ(word, 0x7625);
 
-    EXPECT_ANY_THROW(asmObj.EncodeInstructionWord("POP R0 R0 R0"));
+    word = asmObj.EncodeInstructionWord("SET R0, h'1010");
+    ASSERT_EQ(word, 0x7625);
+
+    EXPECT_ANY_THROW(asmObj.EncodeInstructionWord("POP R0, R0, R0"));
+    EXPECT_ANY_THROW(asmObj.EncodeInstructionWord("SET R0, 0xff"));
+
+    TestAssembler tstAsm;
+
+    word = tstAsm.EncodeInstructionWord("goto:R0", 2);
+    ASSERT_EQ(word, 0x7625);
+    ASSERT_EQ(tstAsm.HasPendingLiteral(), true);
+    ASSERT_EQ(tstAsm.GetPendingLiteral(), 4);
+
+    // Put here as a reminder to implement:
+    // 1 - a way to parse multiline programs, from string in the assmebler
+    // 2 - a test for said multiline programs, including a goto:
+    ASSERT_EQ(false, true);
 }
 
 TEST(TestStringLiteral, BasicAssertions)

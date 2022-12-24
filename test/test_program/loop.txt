@@ -1,0 +1,7 @@
+SET R0, 10 ; This is the number of times it will loop
+SET R10, 0 ; Initialize R10 to be our counter
+
+goto:R2 ; loop on R2
+INC R10
+SUB R0, R10, R1
+JNZ R1, R2
