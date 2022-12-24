@@ -12,5 +12,5 @@ TEST(TestOpCodes_BasicMemory, BasicAssertions)
     auto word = mem.Read(0);
     EXPECT_EQ(word, 0xde);
 
-    EXPECT_THROW(mem.Write(0xffaa, 0xad), std::out_of_range);
+    EXPECT_ANY_THROW(mem.Write(0xffaa, 0xad));
 }

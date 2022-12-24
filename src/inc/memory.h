@@ -18,7 +18,10 @@ template <typename TAddressSpace> class Memory
 
     void Write(TAddressSpace address, uint8_t value)
     {
-        assert(address < _memory.size());
+        if (address >= _memory.size())
+        {
+            throw std::out_of_range("Address out of memory range.");
+        }
         _memory[address] = value;
     }
 

@@ -13,12 +13,14 @@ target_link_libraries(GTest::GTest INTERFACE gtest_main)
 add_executable(Test 
   test_opcode.cpp
   test_memory.cpp
+  test_assembler.cpp
 )
 target_include_directories(Test PRIVATE ${SRC_INC_DIR})
 
 target_link_libraries(Test PRIVATE
   GTest::GTest
   data_table
+  Assembler
 )
 
 add_test(Test_gtest Test)
