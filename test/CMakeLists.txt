@@ -10,12 +10,15 @@ FetchContent_MakeAvailable(googletest)
 add_library(GTest::GTest INTERFACE IMPORTED)
 target_link_libraries(GTest::GTest INTERFACE gtest_main)
 
-add_executable(Test test_opcode.cpp)
+add_executable(Test 
+  test_opcode.cpp
+  test_memory.cpp
+)
 target_include_directories(Test PRIVATE ${SRC_INC_DIR})
 
-target_link_libraries(Test
-PRIVATE
- GTest::GTest
- )
+target_link_libraries(Test PRIVATE
+  GTest::GTest
+  data_table
+)
 
 add_test(Test_gtest Test)

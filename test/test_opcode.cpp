@@ -1,9 +1,7 @@
-#include <algorithm>
 #include <gtest/gtest.h>
-#include <iomanip>
-#include <iostream>
 
-#include <opcode.h>
+#include "common.h"
+#include "opcode.h"
 
 TEST(TestOpCodes_Overlapping, BasicAssertions)
 {

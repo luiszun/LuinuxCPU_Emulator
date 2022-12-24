@@ -1,0 +1,3 @@
+SET R0, h'100
+SET R1, h'001
+AND R0, R1, R2

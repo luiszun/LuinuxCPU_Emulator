@@ -1,0 +1,7 @@
+NOP
+SHFL R0
+MOV R0, R1
+ADD R0, R1, R2
+SET R0, h'1010
+
+
