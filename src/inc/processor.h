@@ -14,9 +14,9 @@ class Processor
     Processor() : _intrMem(InternalMemorySize)
     {
         constexpr unsigned nRegistetrs = 16;
-        for (unsigned i = 0; i < nRegistetrs; ++i)
+        for (uint8_t i = 0; i < nRegistetrs; ++i)
         {
-            _registers.push_back(Register(i * sizeof(uint16_t)));
+            _registers.push_back(Register(i * uint8_t{2}, _intrMem));
         }
     }
 

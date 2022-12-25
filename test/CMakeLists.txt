@@ -14,6 +14,7 @@ add_executable(Test
   test_opcode.cpp
   test_memory.cpp
   test_assembler.cpp
+  test_register.cpp
 )
 target_include_directories(Test PRIVATE ${SRC_INC_DIR})
 
