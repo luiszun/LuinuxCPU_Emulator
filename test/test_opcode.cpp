@@ -3,7 +3,7 @@
 #include "common.h"
 #include "opcode.h"
 
-TEST(TestOpCodes_Overlapping, BasicAssertions)
+TEST(TestOpCodesSuite, TestOverlappingOpcodes)
 {
     std::array<uint8_t, 0x10000> usedOpcode;
     usedOpcode.fill(0);

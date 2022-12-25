@@ -19,7 +19,7 @@ class TestAssembler : public Assembler
     }
 };
 
-TEST(TestInstructionIdentification, BasicAssertions)
+TEST(TestAssemblerSuite, TestInstructionIdentification)
 {
     TestAssembler tstAsm;
 
@@ -28,7 +28,7 @@ TEST(TestInstructionIdentification, BasicAssertions)
     ASSERT_EQ(tstAsm.ContainsInstruction("; hello"), false);
     ASSERT_EQ(tstAsm.ContainsInstruction("MOV R0, R2 ; hello"), true);
 }
-TEST(TestEncodeWord, BasicAssertions)
+TEST(TestAssemblerSuite, TestEncodeWord)
 {
     Assembler asmObj;
 
@@ -65,7 +65,7 @@ TEST(TestEncodeWord, BasicAssertions)
     // 2 - a test for said multiline programs, including a goto:
 }
 
-TEST(TestStringLiteral, BasicAssertions)
+TEST(TestAssemblerSuite, TestStringLiteral)
 {
     Assembler asmObj;
     ASSERT_EQ(asmObj.GetValueFromStringLiteral("h'dead"), 0xdead);
@@ -78,4 +78,16 @@ TEST(TestStringLiteral, BasicAssertions)
     EXPECT_ANY_THROW(asmObj.GetValueFromStringLiteral("- 10"));
     EXPECT_ANY_THROW(asmObj.GetValueFromStringLiteral("10'h"));
     EXPECT_ANY_THROW(asmObj.GetValueFromStringLiteral("0xdead"));
+}
+
+TEST(TestAssemblerSuite, TestMultilineProgram)
+{
+    Assembler asmObj;
+    std::string program = "SET R0, h'100\nSET R1, h'001\nAND R0, R1, R2";
+
+    // Because any arm, amd64 or x86 are little endian, write in little endian.
+    std::vector<uint16_t> expectedBinary{0x2576, 0x0001, 0x2676, 0x0100, 0x6745};
+
+    auto binProgram = asmObj.AssembleString(program);
+    ASSERT_EQ(expectedBinary, binProgram);
 }

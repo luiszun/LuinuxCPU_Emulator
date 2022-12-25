@@ -5,7 +5,7 @@
 
 using Memory16 = Memory<uint16_t>;
 
-TEST(TestOpCodes_BasicMemory, BasicAssertions)
+TEST(TestMemorySuite, TestBasicReadWrite)
 {
     Memory16 mem(0xff);
     mem.Write(0, 0xde);
