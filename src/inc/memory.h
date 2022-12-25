@@ -5,23 +5,20 @@
 template <typename TAddressSpace> class Memory
 {
   public:
-    Memory(TAddressSpace size)
+    Memory(size_t size)
     {
         _memory.resize(size);
     }
 
     uint8_t Read(TAddressSpace address) const
     {
-        assert(address < _memory.size());
+        _ValidateAddress(address);
         return _memory.at(address);
     }
 
     void Write(TAddressSpace address, uint8_t value)
     {
-        if (address >= _memory.size())
-        {
-            throw std::out_of_range("Address out of memory range.");
-        }
+        _ValidateAddress(address);
         _memory[address] = value;
     }
 
@@ -32,9 +29,9 @@ template <typename TAddressSpace> class Memory
 
   protected:
     std::vector<uint8_t> _memory;
-    void _ValidateAddress(TAddressSpace address)
+    void _ValidateAddress(TAddressSpace address) const
     {
-        if (!(address < _memory.size))
+        if (!(address < _memory.size()))
         {
             throw std::out_of_range("Used address is out of range");
         }

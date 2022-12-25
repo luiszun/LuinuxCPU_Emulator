@@ -8,3 +8,7 @@ target_link_libraries(Assembler data_table)
 add_executable(luinuxasm luinux_asm.cpp)
 target_include_directories(luinuxasm PRIVATE ${SRC_INC_DIR})
 target_link_libraries(luinuxasm Assembler data_table)
+
+add_library(processor STATIC processor.cpp)
+target_include_directories(processor PRIVATE ${SRC_INC_DIR})
+target_link_libraries(processor data_table)
