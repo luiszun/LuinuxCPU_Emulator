@@ -26,7 +26,7 @@ uint16_t Assembler::GetValueFromStringLiteral(std::string literal)
     {
         // Hex doesn't accept negatives
         literal.erase(hexIndex, hexLiteral.length());
-        if (!std::regex_match(literal, std::regex("[0-9a-fA-F]*")))
+        if (!std::regex_match(literal, std::regex("[0-9a-fA-F]+")))
         {
             throw std::invalid_argument("Invalid hex number " + literal);
         }
@@ -35,9 +35,9 @@ uint16_t Assembler::GetValueFromStringLiteral(std::string literal)
         ssLiteral >> std::hex >> unsignedValue;
         return unsignedValue;
     }
-    if (!std::regex_match(literal, std::regex("[-]?[0-9]*")))
+    if (!std::regex_match(literal, std::regex("[-]?[0-9]+")))
     {
-        throw std::invalid_argument("Invalid hex number " + literal);
+        throw std::invalid_argument("Invalid number " + literal);
     }
 
     std::stringstream ssLiteral(literal);
@@ -139,7 +139,10 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t inst
 std::vector<uint16_t> Assembler::AssembleFile()
 {
     std::string stringLine;
-    std::vector<uint16_t> binProgram;
+    std::string stringProgram;
+
+    // This will keep track of the address the instruction is to be written
+    uint16_t instructionAddress = 0;
     if (!_canWriteFiles)
     {
         throw std::logic_error("No files were given to read and write.");
@@ -150,9 +153,29 @@ std::vector<uint16_t> Assembler::AssembleFile()
     {
         throw std::runtime_error("File does not exist, or cannot be opened.");
     }
-    // 1 because we're counting lines to report to the user
-    for (unsigned i = 1; std::getline(_inFileStream, stringLine); ++i)
+    while (std::getline(_inFileStream, stringLine))
     {
+        stringProgram += "\n" + stringLine;
+    }
+
+    _inFileStream.close();
+    return AssembleString(stringProgram);
+}
+
+std::vector<uint16_t> Assembler::AssembleString(std::string program)
+{
+    std::stringstream ssProgram(program);
+    std::string stringLine;
+    std::vector<uint16_t> binProgram;
+
+    // 1 because we're counting lines to report to the user
+    for (unsigned i = 1; std::getline(ssProgram, stringLine); ++i)
+    {
+        if (!_ContainsInstruction(stringLine))
+        {
+            continue;
+        }
+
         try
         {
             auto instr = EncodeInstructionWord(stringLine);
@@ -168,8 +191,16 @@ std::vector<uint16_t> Assembler::AssembleFile()
             throw std::runtime_error(e.what() + std::string(" on line i"));
         }
     }
-    _inFileStream.close();
     return binProgram;
+}
+bool Assembler::_ContainsInstruction(std::string line)
+{
+    line = std::regex_replace(line, std::regex(";.*"), "");
+    if (!std::regex_search(line.begin(), line.end(), std::regex("[a-zA-Z]+")))
+    {
+        return false;
+    }
+    return true;
 }
 
 void Assembler::WriteBinaryFile(std::vector<uint16_t> &program)

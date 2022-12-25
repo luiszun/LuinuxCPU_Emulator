@@ -12,8 +12,22 @@ class TestAssembler : public Assembler
     {
         return _literalValue;
     }
+
+    bool ContainsInstruction(std::string line)
+    {
+        return _ContainsInstruction(line);
+    }
 };
 
+TEST(TestInstructionIdentification, BasicAssertions)
+{
+    TestAssembler tstAsm;
+
+    ASSERT_EQ(tstAsm.ContainsInstruction(""), false);
+    ASSERT_EQ(tstAsm.ContainsInstruction("       "), false);
+    ASSERT_EQ(tstAsm.ContainsInstruction("; hello"), false);
+    ASSERT_EQ(tstAsm.ContainsInstruction("MOV R0, R2 ; hello"), true);
+}
 TEST(TestEncodeWord, BasicAssertions)
 {
     Assembler asmObj;
@@ -49,7 +63,6 @@ TEST(TestEncodeWord, BasicAssertions)
     // Put here as a reminder to implement:
     // 1 - a way to parse multiline programs, from string in the assmebler
     // 2 - a test for said multiline programs, including a goto:
-    ASSERT_EQ(false, true);
 }
 
 TEST(TestStringLiteral, BasicAssertions)
@@ -60,6 +73,7 @@ TEST(TestStringLiteral, BasicAssertions)
     ASSERT_EQ(asmObj.GetValueFromStringLiteral("h'1337"), 0x1337);
     ASSERT_EQ(asmObj.GetValueFromStringLiteral("1337"), 1337);
     ASSERT_EQ(asmObj.GetValueFromStringLiteral("-10"), static_cast<uint16_t>(-10));
+    EXPECT_ANY_THROW(asmObj.GetValueFromStringLiteral("h'"));
     EXPECT_ANY_THROW(asmObj.GetValueFromStringLiteral("10.1"));
     EXPECT_ANY_THROW(asmObj.GetValueFromStringLiteral("- 10"));
     EXPECT_ANY_THROW(asmObj.GetValueFromStringLiteral("10'h"));
