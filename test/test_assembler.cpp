@@ -103,3 +103,15 @@ TEST(TestAssemblerSuite, TestGoto)
     auto binProgram = asmObj.AssembleString(program);
     ASSERT_EQ(expectedBinary, binProgram);
 }
+
+TEST(TestAssemblerSuite, TestEmptyLinesAndCommentLines)
+{
+    Assembler asmObj;
+    std::string program = "\n\nSET R0, h'100\n\nSET R1, h'001;cool comment\n;lalalala\n\n\nAND R0, R1, R2\n";
+
+    // Because any arm, amd64 or x86 are little endian, write in little endian.
+    std::vector<uint16_t> expectedBinary{0x2576, 0x0001, 0x2676, 0x0100, 0x6745};
+
+    auto binProgram = asmObj.AssembleString(program);
+    ASSERT_EQ(expectedBinary, binProgram);
+}
