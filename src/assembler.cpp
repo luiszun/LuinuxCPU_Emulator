@@ -62,7 +62,7 @@ uint16_t Assembler::_WordToBigEndian(uint16_t word)
     return result;
 }
 
-uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t instIndex)
+uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t instructionIndex)
 {
     instruction = _RemoveComments(instruction);
     // We have at max 3 arguments on any instruction
@@ -76,8 +76,9 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t inst
     if (instruction.find("goto:") != std::string::npos)
     {
         instruction = std::regex_replace(instruction, std::regex("goto:"), "SET ");
-        // + 2 because the set will take 2 words. And we want to goto the instruction next, not the SET
-        instruction = instruction + " " + std::to_string(instIndex + 2);
+        // + 4 because the set will take 2 words (4 bytes). And we want to goto the instruction next, not the SET
+        // +2 would jump to the literal of the SET instr (the 2nd word)
+        instruction = instruction + " " + std::to_string(instructionIndex + 4);
     }
 
     std::stringstream line(instruction);
@@ -168,6 +169,9 @@ std::vector<uint16_t> Assembler::AssembleString(std::string program)
     std::string stringLine;
     std::vector<uint16_t> binProgram;
 
+    // Address for the instruction to be written.
+    uint16_t instructionIndex = 0;
+
     // 1 because we're counting lines to report to the user
     for (unsigned i = 1; std::getline(ssProgram, stringLine); ++i)
     {
@@ -178,12 +182,14 @@ std::vector<uint16_t> Assembler::AssembleString(std::string program)
 
         try
         {
-            auto instr = EncodeInstructionWord(stringLine);
+            auto instr = EncodeInstructionWord(stringLine, instructionIndex);
             binProgram.push_back(_WordToBigEndian(instr));
+            instructionIndex += 2;
             if (_pendingLiteralValue)
             {
                 binProgram.push_back(_WordToBigEndian(_literalValue));
                 _pendingLiteralValue = false;
+                instructionIndex += 2;
             }
         }
         catch (const std::exception &e)

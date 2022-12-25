@@ -58,7 +58,7 @@ TEST(TestAssemblerSuite, TestEncodeWord)
     word = tstAsm.EncodeInstructionWord("goto:R0", 2);
     ASSERT_EQ(word, 0x7625);
     ASSERT_EQ(tstAsm.HasPendingLiteral(), true);
-    ASSERT_EQ(tstAsm.GetPendingLiteral(), 4);
+    ASSERT_EQ(tstAsm.GetPendingLiteral(), 6);
 
     // Put here as a reminder to implement:
     // 1 - a way to parse multiline programs, from string in the assmebler
@@ -87,6 +87,18 @@ TEST(TestAssemblerSuite, TestMultilineProgram)
 
     // Because any arm, amd64 or x86 are little endian, write in little endian.
     std::vector<uint16_t> expectedBinary{0x2576, 0x0001, 0x2676, 0x0100, 0x6745};
+
+    auto binProgram = asmObj.AssembleString(program);
+    ASSERT_EQ(expectedBinary, binProgram);
+}
+
+TEST(TestAssemblerSuite, TestGoto)
+{
+    Assembler asmObj;
+    std::string program = "SET R0, h'100\nSET R1, h'001\nAND R0, R1, R2\ngoto:R0";
+
+    // Because any arm, amd64 or x86 are little endian, write in little endian.
+    std::vector<uint16_t> expectedBinary{0x2576, 0x0001, 0x2676, 0x0100, 0x6745, 0x2576, 0x0e00};
 
     auto binProgram = asmObj.AssembleString(program);
     ASSERT_EQ(expectedBinary, binProgram);
