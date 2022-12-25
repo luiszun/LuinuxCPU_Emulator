@@ -59,10 +59,6 @@ TEST(TestAssemblerSuite, TestEncodeWord)
     ASSERT_EQ(word, 0x7625);
     ASSERT_EQ(tstAsm.HasPendingLiteral(), true);
     ASSERT_EQ(tstAsm.GetPendingLiteral(), 6);
-
-    // Put here as a reminder to implement:
-    // 1 - a way to parse multiline programs, from string in the assmebler
-    // 2 - a test for said multiline programs, including a goto:
 }
 
 TEST(TestAssemblerSuite, TestStringLiteral)
