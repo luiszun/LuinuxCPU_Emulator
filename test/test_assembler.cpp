@@ -115,3 +115,16 @@ TEST(TestAssemblerSuite, TestEmptyLinesAndCommentLines)
     auto binProgram = asmObj.AssembleString(program);
     ASSERT_EQ(expectedBinary, binProgram);
 }
+
+TEST(TestAssemblerSuite, TestLoop10x)
+{
+    Assembler asmObj;
+    std::string program = "SET R0, 10 ; This is the number of times it will loop\nSET R10, 0 ; Initialize R10 to be "
+                          "our counter\n\ngoto:R2 ; loop on R2\nINC R10\nSUB R0, R10, R1\nJNZ R1, R2\n";
+
+    // Because any arm, amd64 or x86 are little endian, write in little endian.
+    std::vector<uint16_t> expectedBinary{0x2576, 0x0a00, 0x2f76, 0x0000, 0x2776, 0x0c00, 0x8f76, 0xf615, 0x6771};
+
+    auto binProgram = asmObj.AssembleString(program);
+    ASSERT_EQ(expectedBinary, binProgram);
+}
