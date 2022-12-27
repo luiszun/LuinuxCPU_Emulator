@@ -4,6 +4,7 @@
 
 // 256 bytes of internal memory, used for 8x register banks
 constexpr size_t InternalMemorySize = 256;
+constexpr uint16_t RSP_DefaultAddress = 0xffff - 512;
 
 using Memory16 = Memory<uint16_t>;
 using NVMemory16 = NVMemory<uint16_t>;
@@ -12,18 +13,13 @@ using Memory8 = Memory<uint8_t>;
 class Processor
 {
   public:
-    Processor(std::string diskFilename)
-        : _intrMem(InternalMemorySize), _mainMemory(0x10000), _programMemory(0x10000, diskFilename)
-    {
-        static_assert(static_cast<uint8_t>(RegisterId::RAC) == 0);
-        for (auto i = RegisterId::RAC; i != RegisterId::END_OF_REGLIST; i = RegisterId(static_cast<uint8_t>(i) + 1))
-        {
-            _registers.insert({i, Register(static_cast<uint8_t>(i) * uint8_t{2}, _intrMem)});
-        }
-    }
+    Processor(std::string diskFilename);
 
     void WriteRegister(RegisterId reg, uint16_t value);
     uint16_t ReadRegister(RegisterId reg) const;
+
+    uint16_t FetchInstruction();
+    void PerformExecutionCycle();
 
     // TODO:
     // fetch
@@ -34,8 +30,8 @@ class Processor
     // pause
 
   protected:
-    uint16_t ReadMemoryWord(Memory16 &memory, uint16_t address) const;
-    void WriteMemoryWord(Memory16 &memory, uint16_t address, uint16_t value);
+    uint16_t _ReadMemoryWord(Memory16 &memory, uint16_t address) const;
+    void _WriteMemoryWord(Memory16 &memory, uint16_t address, uint16_t value);
 
     NVMemory16 _programMemory;
     Memory16 _mainMemory;

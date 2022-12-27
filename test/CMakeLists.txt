@@ -23,6 +23,7 @@ target_link_libraries(Test PRIVATE
   GTest::GTest
   data_table
   Assembler
+  processor
 )
 
 add_test(Test_gtest Test)
