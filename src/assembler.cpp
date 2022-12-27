@@ -14,7 +14,7 @@ uint16_t Assembler::EncodeInstructionWord(const OpCode &opCode, const std::array
     return instructionWord;
 }
 
-uint16_t Assembler::GetValueFromStringLiteral(std::string literal)
+uint16_t Assembler::GetValueFromStringLiteral(std::string literal) const
 {
     const std::string hexLiteral = "h'";
     uint16_t unsignedValue = 0;
@@ -54,7 +54,7 @@ uint16_t Assembler::GetValueFromStringLiteral(std::string literal)
     return unsignedValue;
 }
 
-uint16_t Assembler::_WordToBigEndian(uint16_t word)
+uint16_t Assembler::_WordToBigEndian(uint16_t word) const
 {
     uint16_t result = word << 8;
     word >>= 8;
@@ -199,7 +199,7 @@ std::vector<uint16_t> Assembler::AssembleString(std::string program)
     }
     return binProgram;
 }
-bool Assembler::_ContainsInstruction(std::string line)
+bool Assembler::_ContainsInstruction(std::string line) const
 {
     line = std::regex_replace(line, std::regex(";.*"), "");
     if (!std::regex_search(line.begin(), line.end(), std::regex("[a-zA-Z]+")))
@@ -223,13 +223,13 @@ void Assembler::WriteBinaryFile(std::vector<uint16_t> &program)
     _outFileStream.close();
 }
 
-bool Assembler::_IsSpecialInstruction(OpCodeId id)
+bool Assembler::_IsSpecialInstruction(OpCodeId id) const
 {
     // Remember that SET, and SET_M are special commands. We'll process them separately
     return (id == OpCodeId::SET) || (id == OpCodeId::SET_M);
 }
 
-std::string Assembler::_RemoveComments(std::string str)
+std::string Assembler::_RemoveComments(std::string str) const
 {
     return str.substr(0, str.find(";"));
 }

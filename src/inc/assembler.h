@@ -17,16 +17,16 @@ class Assembler
 
     uint16_t EncodeInstructionWord(const OpCode &opCode, const std::array<RegisterId, 3> &args);
     uint16_t EncodeInstructionWord(std::string instruction, uint16_t instIndex = 0);
-    uint16_t GetValueFromStringLiteral(std::string literal);
+    uint16_t GetValueFromStringLiteral(std::string literal) const;
     std::vector<uint16_t> AssembleFile();
     std::vector<uint16_t> AssembleString(std::string program);
     void WriteBinaryFile(std::vector<uint16_t> &program);
 
   protected:
-    uint16_t _WordToBigEndian(uint16_t word);
-    bool _IsSpecialInstruction(OpCodeId id);
-    std::string _RemoveComments(std::string str);
-    bool _ContainsInstruction(std::string line);
+    uint16_t _WordToBigEndian(uint16_t word) const;
+    bool _IsSpecialInstruction(OpCodeId id) const;
+    std::string _RemoveComments(std::string str) const;
+    bool _ContainsInstruction(std::string line) const;
 
     std::string _inFilename;
     std::string _outFilename;

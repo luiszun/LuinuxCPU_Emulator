@@ -22,7 +22,8 @@ enum class RegisterId : uint8_t
     R8,
     R9,
     R10,
-    R11
+    R11,
+    END_OF_REGLIST
 };
 
 enum class FlagsRegister
@@ -44,7 +45,7 @@ class Register
     {
     }
 
-    uint16_t Read()
+    uint16_t Read() const
     {
         uint16_t value = (_memory.Read(_address) << 8);
         value |= _memory.Read(_address + 1);
