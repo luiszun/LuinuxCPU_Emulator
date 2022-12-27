@@ -37,3 +37,25 @@ template <typename TAddressSpace> class Memory
         }
     }
 };
+
+template <typename TAddressSpace> class NVMemory : public Memory<TAddressSpace>
+{
+  public:
+    NVMemory(size_t size, std::string filename) : Memory<TAddressSpace>(size), _filename(filename)
+    {
+        _diskFile.open(_filename, std::ios::binary | std::ios::in);
+        _diskFile.read(reinterpret_cast<char *>(&(this->_memory[0])), this->_memory.size());
+        _diskFile.close();
+    }
+
+    ~NVMemory()
+    {
+        _diskFile.open(_filename, std::ios::binary | std::ios::trunc | std::ios::out);
+        _diskFile.write(reinterpret_cast<char *>(&(this->_memory[0])), this->_memory.size());
+        _diskFile.close();
+    }
+
+  private:
+    std::fstream _diskFile;
+    std::string _filename;
+};
