@@ -25,3 +25,4 @@ target_link_libraries(Test PRIVATE
 )
 
 add_test(Test_gtest Test)
+configure_file(test_nvmemory.bin ${CMAKE_CURRENT_BINARY_DIR}/test_nvmemory.bin COPYONLY)

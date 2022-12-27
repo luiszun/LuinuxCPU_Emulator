@@ -30,6 +30,9 @@ class Processor
     // pause
 
   protected:
+    uint16_t ReadMemoryWord(Memory16 &memory, uint16_t address);
+    uint16_t WriteMemoryWord(Memory16 &memory, uint16_t address);
+
     std::shared_ptr<NVMemory16> _programMemory;
     Memory16 _mainMemory;
     Memory8 _intrMem;
