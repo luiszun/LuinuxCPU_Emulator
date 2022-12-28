@@ -44,7 +44,7 @@ class Processor
     Memory8 _intrMem;
     std::unordered_map<RegisterId, Register> _registers;
 
-    OpCodeId _decodedOpCode = OpCodeId::INVALID_INSTR;
+    OpCodeId _decodedOpCodeId = OpCodeId::INVALID_INSTR;
     uint16_t _literalValue = 0;
     uint16_t _fetchedInstruction = 0;
     std::vector<RegisterId> _instructionArgs;

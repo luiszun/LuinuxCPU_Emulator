@@ -80,3 +80,4 @@ struct OpCode
 
 extern const std::unordered_map<std::string, OpCodeId> mnemonicTable;
 extern const std::unordered_map<OpCodeId, OpCode> opCodeTable;
+extern const std::unordered_map<uint16_t, OpCodeId> opCodeValuesTable;

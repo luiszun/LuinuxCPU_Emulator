@@ -33,11 +33,45 @@ void Processor::_FetchInstruction()
 
 void Processor::_DecodeInstruction()
 {
-    if ((_decodedOpCode != OpCodeId::INVALID_INSTR) || (_instructionArgs.size() > 0))
+    if ((_decodedOpCodeId != OpCodeId::INVALID_INSTR) || (_instructionArgs.size() > 0))
     {
         throw std::runtime_error("Decoding new instruction with previous exec cycle unfinished.");
     }
-    _decodedOpCode = static_cast<OpCodeId>(_fetchedInstruction >> 12);
+    // Need to check a map, opcode 4b, 8b, 12b, 16b
+    for (auto i = 0; i < 4; ++i)
+    {
+        uint16_t opCodeValue = _fetchedInstruction >> (4 * i);
+        if (opCodeValuesTable.count(opCodeValue) > 0)
+        {
+            _decodedOpCodeId = opCodeValuesTable.at(opCodeValue);
+            break;
+        }
+    }
+
+    // If we couldn't find the opcode, then we got an invalid operation. Throw for now. We still don't know how to
+    // handle these.
+    if (_decodedOpCodeId == OpCodeId::INVALID_INSTR)
+    {
+        throw std::runtime_error("Invalid instruction found in memory. Cannot decode");
+    }
+    _instructionArgs.resize(opCodeTable.at(_decodedOpCodeId).argCount);
+
+    if ((_decodedOpCodeId == OpCodeId::SET) || _decodedOpCodeId == OpCodeId::SET_M)
+    {
+        throw std::runtime_error("Not-implemented");
+    }
+    else
+    {
+        for (auto i = _instructionArgs.size() - 1; i >= 0; --i)
+        {
+            _instructionArgs[i] = static_cast<RegisterId>(_fetchedInstruction & 0xf);
+            _fetchedInstruction >>= 4;
+        }
+        if (_fetchedInstruction != opCodeTable.at(_decodedOpCodeId).opCode)
+        {
+            throw std::runtime_error("Something went wrong. Did we decode more or less params than expected?");
+        }
+    }
 }
 
 void Processor::_ExecuteInstruction()
@@ -46,6 +80,9 @@ void Processor::_ExecuteInstruction()
 
 void Processor::PerformExecutionCycle()
 {
+    _FetchInstruction();
+    _DecodeInstruction();
+    _ExecuteInstruction();
 }
 
 Processor::Processor(std::string diskFilename)

@@ -55,3 +55,22 @@ const std::unordered_map<std::string, RegisterId> registerMap = {
     {"R3", RegisterId::R3},   {"R4", RegisterId::R4},   {"R5", RegisterId::R5},   {"R6", RegisterId::R6},
     {"R7", RegisterId::R7},   {"R8", RegisterId::R8},   {"R9", RegisterId::R9},   {"R10", RegisterId::R10},
     {"R11", RegisterId::R11}};
+
+const std::unordered_map<uint16_t, OpCodeId> opCodeValuesTable = {
+    {0x0, OpCodeId::ADD},      {0x1, OpCodeId::SUB},      {0x2, OpCodeId::MUL},      {0x3, OpCodeId::DIV},
+    {0x4, OpCodeId::AND},      {0x5, OpCodeId::OR},       {0x6, OpCodeId::XOR},      {0x70, OpCodeId::JZ},
+    {0x71, OpCodeId::JNZ},     {0x72, OpCodeId::MOV},     {0x73, OpCodeId::LOAD},    {0x74, OpCodeId::STOR},
+    {0x75, OpCodeId::TSTB},    {0x760, OpCodeId::SETZ},   {0x761, OpCodeId::SETO},   {0x762, OpCodeId::SET},
+    {0x763, OpCodeId::PUSH},   {0x764, OpCodeId::POP},    {0x765, OpCodeId::NOT},    {0x766, OpCodeId::SHFR},
+    {0x767, OpCodeId::SHFL},   {0x768, OpCodeId::INC},    {0x963, OpCodeId::DEC},    {0x7690, OpCodeId::NOP},
+    {0x7691, OpCodeId::STOP},  {0x77, OpCodeId::ADD_RM},  {0x78, OpCodeId::ADD_MR},  {0x79, OpCodeId::ADD_MM},
+    {0x7a, OpCodeId::SUB_RM},  {0x7b, OpCodeId::SUB_MR},  {0x7c, OpCodeId::SUB_MM},  {0x7d, OpCodeId::MUL_RM},
+    {0x7e, OpCodeId::MUL_MR},  {0x7f, OpCodeId::MUL_MM},  {0x80, OpCodeId::DIV_RM},  {0x81, OpCodeId::DIV_MR},
+    {0x82, OpCodeId::DIV_MM},  {0x83, OpCodeId::AND_RM},  {0x84, OpCodeId::AND_MR},  {0x85, OpCodeId::AND_MM},
+    {0x86, OpCodeId::OR_RM},   {0x87, OpCodeId::OR_MR},   {0x88, OpCodeId::OR_MM},   {0x89, OpCodeId::XOR_RM},
+    {0x8a, OpCodeId::XOR_MR},  {0x8b, OpCodeId::XOR_MM},  {0x8c, OpCodeId::JZ_RM},   {0x8d, OpCodeId::JZ_MR},
+    {0x8e, OpCodeId::JZ_MM},   {0x8f, OpCodeId::JNZ_RM},  {0x90, OpCodeId::JNZ_MR},  {0x91, OpCodeId::JNZ_MM},
+    {0x92, OpCodeId::MOV_RM},  {0x93, OpCodeId::MOV_MR},  {0x94, OpCodeId::MOV_MM},  {0x95, OpCodeId::TSTB_M},
+    {0x76a, OpCodeId::SETZ_M}, {0x76b, OpCodeId::SETO_M}, {0x76c, OpCodeId::SET_M},  {0x76d, OpCodeId::PUSH_M},
+    {0x76e, OpCodeId::POP_M},  {0x76f, OpCodeId::NOT_M},  {0x960, OpCodeId::SHFR_M}, {0x961, OpCodeId::SHFL_M},
+    {0x962, OpCodeId::INC_M},  {0x964, OpCodeId::DEC_M}};
