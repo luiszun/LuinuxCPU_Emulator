@@ -1,4 +1,5 @@
 #include "processor.h"
+#include "common.h"
 
 uint16_t Processor::_ReadMemoryWord(Memory16 &memory, uint16_t address) const
 {
@@ -23,12 +24,24 @@ uint16_t Processor::ReadRegister(RegisterId reg) const
     return _registers.at(reg).Read();
 }
 
-uint16_t Processor::FetchInstruction()
+void Processor::_FetchInstruction()
 {
     uint16_t ripVal = ReadRegister(RegisterId::RIP);
-    uint16_t word = _ReadMemoryWord(_programMemory, ripVal);
+    _fetchedInstruction = _ReadMemoryWord(_programMemory, ripVal);
     WriteRegister(RegisterId::RIP, ripVal + 1);
-    return word;
+}
+
+void Processor::_DecodeInstruction()
+{
+    if ((_decodedOpCode != OpCodeId::INVALID_INSTR) || (_instructionArgs.size() > 0))
+    {
+        throw std::runtime_error("Decoding new instruction with previous exec cycle unfinished.");
+    }
+    _decodedOpCode = static_cast<OpCodeId>(_fetchedInstruction >> 12);
+}
+
+void Processor::_ExecuteInstruction()
+{
 }
 
 void Processor::PerformExecutionCycle()
