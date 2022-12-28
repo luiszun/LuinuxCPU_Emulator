@@ -36,7 +36,7 @@ enum class FlagsRegister
     StackOverflow
 };
 
-extern std::unordered_map<std::string, RegisterId> registerMap;
+extern const std::unordered_map<std::string, RegisterId> registerMap;
 
 class Register
 {

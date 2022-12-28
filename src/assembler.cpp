@@ -85,14 +85,15 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t inst
     std::string mnemonic;
     line >> mnemonic;
 
-    if (opCodeTable.count(mnemonic) < 1)
+    if (mnemonicTable.count(mnemonic) < 1)
     {
         throw std::runtime_error("Error: unrecognized mnemonic " + mnemonic);
     }
 
-    const OpCode &opCode = opCodeTable[mnemonic];
+    auto id = mnemonicTable.at(mnemonic);
+    const OpCode &opCode = opCodeTable.at(id);
 
-    if (_IsSpecialInstruction(opCode.id))
+    if (_IsSpecialInstruction(id))
     {
         line >> stringArgs[0];
         line >> stringArgs[1];
@@ -105,7 +106,7 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t inst
             throw std::runtime_error("Error: unrecognized register named " + regName);
         }
 
-        registerArgs[0] = reinterpret_cast<RegisterId>(registerMap[regName]);
+        registerArgs[0] = reinterpret_cast<RegisterId>(registerMap.at(regName));
 
         _literalValue = GetValueFromStringLiteral(stringLiteral);
         _pendingLiteralValue = true;
@@ -126,7 +127,7 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t inst
             throw std::runtime_error("Error: unrecognized register named " + stringArgs[i]);
         }
 
-        registerArgs[i] = reinterpret_cast<RegisterId>(registerMap[stringArgs[i]]);
+        registerArgs[i] = reinterpret_cast<RegisterId>(registerMap.at(stringArgs[i]));
     }
 
     // Check if it has anything other than spaces or \n

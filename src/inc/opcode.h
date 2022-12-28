@@ -74,9 +74,9 @@ enum class OpCodeId
 
 struct OpCode
 {
-    OpCodeId id;
     uint16_t opCode;
     uint8_t argCount;
 };
 
-extern std::unordered_map<std::string, OpCode> opCodeTable;
+extern const std::unordered_map<std::string, OpCodeId> mnemonicTable;
+extern const std::unordered_map<OpCodeId, OpCode> opCodeTable;

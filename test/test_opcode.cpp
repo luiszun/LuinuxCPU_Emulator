@@ -8,10 +8,11 @@ TEST(TestOpCodesSuite, TestOverlappingOpcodes)
     std::array<uint8_t, 0x10000> usedOpcode;
     usedOpcode.fill(0);
 
-    for (auto i = opCodeTable.begin(); i != opCodeTable.end(); ++i)
+    for (auto i = mnemonicTable.begin(); i != mnemonicTable.end(); ++i)
     {
         const auto opName = i->first;
-        const auto opCodeStruct = i->second;
+        const auto opCodeId = i->second;
+        const auto opCodeStruct = opCodeTable.at(opCodeId);
         const auto nOperands = opCodeStruct.argCount;
         const auto opCode = opCodeStruct.opCode;
 
