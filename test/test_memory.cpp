@@ -30,3 +30,16 @@ TEST(TestMemorySuite, TestNonVolatileMemory)
         mem.Write(i, memdmp[i]);
     }
 }
+
+TEST(TestMemorySuite, TestWriteShellcode)
+{
+    Memory16 mem(0xff);
+
+    mem.Write(1, "\xde\xad\xbe\xef");
+
+    ASSERT_EQ(mem.Read(0), 0);
+    ASSERT_EQ(mem.Read(1), 0xde);
+    ASSERT_EQ(mem.Read(2), 0xad);
+    ASSERT_EQ(mem.Read(3), 0xbe);
+    ASSERT_EQ(mem.Read(4), 0xef);
+}

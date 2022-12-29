@@ -85,8 +85,8 @@ void Processor::PerformExecutionCycle()
     _ExecuteInstruction();
 }
 
-Processor::Processor(std::string diskFilename)
-    : _intrMem(InternalMemorySize), _mainMemory(0x10000), _programMemory(0x10000, diskFilename)
+Processor::Processor(Memory16 &programMemory)
+    : _intrMem(InternalMemorySize), _mainMemory(0x10000), _programMemory(programMemory)
 {
     static_assert(static_cast<uint8_t>(RegisterId::RAC) == 0);
     for (auto i = RegisterId::RAC; i != RegisterId::END_OF_REGLIST; i = RegisterId(static_cast<uint8_t>(i) + 1))

@@ -22,6 +22,12 @@ template <typename TAddressSpace> class Memory
         _memory[address] = value;
     }
 
+    void Write(TAddressSpace address, std::string shellCode)
+    {
+        _ValidateAddress(address);
+        std::memcpy(&_memory[address], &(shellCode.c_str()[0]), shellCode.size());
+    }
+
     size_t Size() const
     {
         return _memory.size();

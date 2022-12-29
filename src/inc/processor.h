@@ -17,7 +17,7 @@ enum class InstructionCycle
 class Processor
 {
   public:
-    Processor(std::string diskFilename);
+    Processor(Memory16 &programMemory);
 
     void WriteRegister(RegisterId reg, uint16_t value);
     uint16_t ReadRegister(RegisterId reg) const;
@@ -39,7 +39,7 @@ class Processor
     void _DecodeInstruction();
     void _ExecuteInstruction();
 
-    NVMemory16 _programMemory;
+    Memory16 &_programMemory;
     Memory16 _mainMemory;
     Memory8 _intrMem;
     std::unordered_map<RegisterId, Register> _registers;
