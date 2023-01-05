@@ -28,7 +28,7 @@ void Processor::_FetchInstruction()
 {
     uint16_t ripVal = ReadRegister(RegisterId::RIP);
     _fetchedInstruction = _ReadMemoryWord(_programMemory, ripVal);
-    WriteRegister(RegisterId::RIP, ripVal + 1);
+    WriteRegister(RegisterId::RIP, ripVal + sizeof(uint16_t));
 }
 
 void Processor::_DecodeInstruction()
