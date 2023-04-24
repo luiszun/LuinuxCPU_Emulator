@@ -26,6 +26,7 @@ uint16_t Processor::ReadRegister(RegisterId reg) const
 
 void Processor::_FetchInstruction()
 {
+    _instructionStatus = InstructionCycle::Fetch;
     uint16_t ripVal = ReadRegister(RegisterId::RIP);
     _fetchedInstruction = _ReadMemoryWord(_programMemory, ripVal);
     WriteRegister(RegisterId::RIP, ripVal + sizeof(uint16_t));
@@ -33,6 +34,7 @@ void Processor::_FetchInstruction()
 
 void Processor::_DecodeInstruction()
 {
+    _instructionStatus = InstructionCycle::Decode;
     if ((_decodedOpCodeId != OpCodeId::INVALID_INSTR) || (_instructionArgs.size() > 0))
     {
         throw std::runtime_error("Decoding new instruction with previous exec cycle unfinished.");
@@ -76,6 +78,7 @@ void Processor::_DecodeInstruction()
 
 void Processor::_ExecuteInstruction()
 {
+    _instructionStatus = InstructionCycle::Execute;
 }
 
 void Processor::PerformExecutionCycle()
@@ -83,6 +86,9 @@ void Processor::PerformExecutionCycle()
     _FetchInstruction();
     _DecodeInstruction();
     _ExecuteInstruction();
+
+    // Instruction cycle is done at this point
+    _instructionStatus = InstructionCycle::Idle;
 }
 
 Processor::Processor(Memory16 &programMemory)

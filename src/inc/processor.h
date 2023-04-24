@@ -13,7 +13,12 @@ using Memory8 = Memory<uint8_t>;
 
 enum class InstructionCycle
 {
+    Idle = 0,
+    Decode,
+    Fetch,
+    Execute
 };
+
 class Processor
 {
   public:
@@ -25,8 +30,6 @@ class Processor
     void PerformExecutionCycle();
 
     // TODO:
-    // fetch
-    // decode
     // execute
     // alu
     // flags updates
@@ -48,4 +51,5 @@ class Processor
     uint16_t _literalValue = 0;
     uint16_t _fetchedInstruction = 0;
     std::vector<RegisterId> _instructionArgs;
+    InstructionCycle _instructionStatus = InstructionCycle::Idle;
 };
