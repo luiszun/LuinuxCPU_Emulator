@@ -60,7 +60,12 @@ void Processor::_DecodeInstruction()
 
     if ((_decodedOpCodeId == OpCodeId::SET) || _decodedOpCodeId == OpCodeId::SET_M)
     {
-        throw std::runtime_error("Not-implemented");
+        _instructionArgs.resize(1);
+        _instructionArgs[0] = static_cast<RegisterId>(_fetchedInstruction & 0xf);
+        // We need to read the next word for these ones
+        _FetchInstruction();
+
+        _2wordOperand = _fetchedInstruction;
     }
     else
     {
@@ -79,6 +84,9 @@ void Processor::_DecodeInstruction()
 void Processor::_ExecuteInstruction()
 {
     _instructionStatus = InstructionCycle::Execute;
+
+    // End of instruction cycle
+    _CleanInstructionCycle();
 }
 
 void Processor::PerformExecutionCycle()
@@ -102,4 +110,10 @@ Processor::Processor(Memory16 &programMemory)
 
     WriteRegister(RegisterId::RSP, RSP_DefaultAddress);
     WriteRegister(RegisterId::RIP, 0);
+}
+
+void Processor::_CleanInstructionCycle()
+{
+    _decodedOpCodeId = OpCodeId::INVALID_INSTR;
+    _instructionArgs.resize(0);
 }

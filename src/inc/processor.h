@@ -41,6 +41,7 @@ class Processor
     void _FetchInstruction();
     void _DecodeInstruction();
     void _ExecuteInstruction();
+    void _CleanInstructionCycle();
 
     Memory16 &_programMemory;
     Memory16 _mainMemory;
@@ -51,5 +52,6 @@ class Processor
     uint16_t _literalValue = 0;
     uint16_t _fetchedInstruction = 0;
     std::vector<RegisterId> _instructionArgs;
+    uint16_t _2wordOperand;
     InstructionCycle _instructionStatus = InstructionCycle::Idle;
 };
