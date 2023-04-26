@@ -42,10 +42,11 @@ class Processor
     void _DecodeInstruction();
     void _ExecuteInstruction();
     void _CleanInstructionCycle();
+    uint16_t DereferenceRegister(RegisterId reg);
 
     Memory16 &_programMemory;
     Memory16 _mainMemory;
-    Memory8 _intrMem;
+    Memory8 _internalMemory;
     std::unordered_map<RegisterId, Register> _registers;
 
     OpCodeId _decodedOpCodeId = OpCodeId::INVALID_INSTR;

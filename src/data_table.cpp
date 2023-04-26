@@ -25,6 +25,27 @@ const std::unordered_map<OpCodeId, OpCode> opCodeTable = {
     {OpCodeId::POP_M, OpCode{0x76e, 1}},  {OpCodeId::NOT_M, OpCode{0x76f, 1}}, {OpCodeId::SHFR_M, OpCode{0x960, 1}},
     {OpCodeId::SHFL_M, OpCode{0x961, 1}}, {OpCodeId::INC_M, OpCode{0x962, 1}}, {OpCodeId::DEC_M, OpCode{0x964, 1}}};
 
+// This table has a value to represent which arguments are to be dereferenced.
+// A value of 5('b101) means Op0 and Op2 are to be dereferenced. For Op1 we'll directly use the value in the register
+const std::unordered_map<OpCodeId, uint8_t> opCodeDereferenceMap = {
+    {OpCodeId::ADD, 0b000},   {OpCodeId::SUB, 0b000},   {OpCodeId::MUL, 0b000},   {OpCodeId::DIV, 0b000},
+    {OpCodeId::AND, 0b000},   {OpCodeId::OR, 0b000},    {OpCodeId::XOR, 0b000},   {OpCodeId::JZ, 0b00},
+    {OpCodeId::JNZ, 0b00},    {OpCodeId::MOV, 0b00},    {OpCodeId::LOAD, 0b00},   {OpCodeId::STOR, 0b00},
+    {OpCodeId::TSTB, 0b00},   {OpCodeId::SETZ, 0b0},    {OpCodeId::SETO, 0b0},    {OpCodeId::SET, 0b0},
+    {OpCodeId::PUSH, 0b0},    {OpCodeId::POP, 0b0},     {OpCodeId::NOT, 0b0},     {OpCodeId::SHFR, 0b0},
+    {OpCodeId::SHFL, 0b0},    {OpCodeId::INC, 0b0},     {OpCodeId::DEC, 0b0},     {OpCodeId::NOP, 0b0},
+    {OpCodeId::STOP, 0b0},    {OpCodeId::ADD_RM, 0b01}, {OpCodeId::ADD_MR, 0b10}, {OpCodeId::ADD_MM, 0b11},
+    {OpCodeId::SUB_RM, 0b01}, {OpCodeId::SUB_MR, 0b10}, {OpCodeId::SUB_MM, 0b11}, {OpCodeId::MUL_RM, 0b01},
+    {OpCodeId::MUL_MR, 0b10}, {OpCodeId::MUL_MM, 0b11}, {OpCodeId::DIV_RM, 0b01}, {OpCodeId::DIV_MR, 0b10},
+    {OpCodeId::DIV_MM, 0b11}, {OpCodeId::AND_RM, 0b01}, {OpCodeId::AND_MR, 0b10}, {OpCodeId::AND_MM, 0b11},
+    {OpCodeId::OR_RM, 0b01},  {OpCodeId::OR_MR, 0b10},  {OpCodeId::OR_MM, 0b11},  {OpCodeId::XOR_RM, 0b01},
+    {OpCodeId::XOR_MR, 0b10}, {OpCodeId::XOR_MM, 0b11}, {OpCodeId::JZ_RM, 0b01},  {OpCodeId::JZ_MR, 0b10},
+    {OpCodeId::JZ_MM, 0b11},  {OpCodeId::JNZ_RM, 0b01}, {OpCodeId::JNZ_MR, 0b10}, {OpCodeId::JNZ_MM, 0b11},
+    {OpCodeId::MOV_RM, 0b01}, {OpCodeId::MOV_MR, 0b10}, {OpCodeId::MOV_MM, 0b11}, {OpCodeId::TSTB_M, 0b01},
+    {OpCodeId::SETZ_M, 0b1},  {OpCodeId::SETO_M, 0b1},  {OpCodeId::SET_M, 0b1},   {OpCodeId::PUSH_M, 0b1},
+    {OpCodeId::POP_M, 0b1},   {OpCodeId::NOT_M, 0b1},   {OpCodeId::SHFR_M, 0b1},  {OpCodeId::SHFL_M, 0b1},
+    {OpCodeId::INC_M, 0b1},   {OpCodeId::DEC_M, 0b1}};
+
 const std::unordered_map<std::string, OpCodeId> mnemonicTable = {
     {"ADD", OpCodeId::ADD},       {"SUB", OpCodeId::SUB},       {"MUL", OpCodeId::MUL},
     {"DIV", OpCodeId::DIV},       {"AND", OpCodeId::AND},       {"OR", OpCodeId::OR},
