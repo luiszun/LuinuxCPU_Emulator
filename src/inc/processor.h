@@ -5,6 +5,7 @@
 
 // 256 bytes of internal memory, used for 8x register banks
 constexpr size_t InternalMemorySize = 256;
+constexpr size_t MainMemorySize = 0x10000;
 constexpr uint16_t RSP_DefaultAddress = 0xffff - 512;
 
 using Memory16 = Memory<uint16_t>;
@@ -42,7 +43,7 @@ class Processor
     void _DecodeInstruction();
     void _ExecuteInstruction();
     void _CleanInstructionCycle();
-    uint16_t DereferenceRegister(RegisterId reg);
+    uint16_t _DereferenceRegister(RegisterId reg);
 
     Memory16 &_programMemory;
     Memory16 _mainMemory;

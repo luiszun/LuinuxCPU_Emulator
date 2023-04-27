@@ -7,7 +7,8 @@ template <typename TAddressSpace> class Memory
   public:
     Memory(size_t size)
     {
-        _memory.resize(size);
+        _memory.reserve(size);
+        _memory.resize(size, 0);
     }
 
     uint8_t Read(TAddressSpace address) const

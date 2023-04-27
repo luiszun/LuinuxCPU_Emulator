@@ -6,9 +6,6 @@
 
 using Memory16 = Memory<uint16_t>;
 
-// Written in little endian
-// unsigned char loop10xShellCode[] = "\x25\x76\x00\x10\x26\x76\x01\x00\x67\x45\x25\x76\x0e\x00";
-
 unsigned char loop10xShellCode[] = "\x76\x25\x00\x10\x76\x26\x00\x01\x45\x67\x76\x25\x00\x0e";
 
 class TestProcessor : public Processor
@@ -45,6 +42,21 @@ class TestProcessor : public Processor
     {
         return _instructionArgs[argN];
     }
+
+    std::unordered_map<RegisterId, Register> &GetRegisters()
+    {
+        return _registers;
+    }
+
+    Memory16 &GetMainMemory()
+    {
+        return _mainMemory;
+    }
+
+    uint16_t DereferenceRegister(RegisterId reg)
+    {
+        return _DereferenceRegister(reg);
+    }
 };
 
 TEST(TestProcessorSuite, TestProcessorExistence)
@@ -80,4 +92,19 @@ TEST(TestProcessorSuite, TestFetchAndDecode)
     cpu.DecodeInstruction();
     ASSERT_EQ(cpu.GetDecodedOP(), OpCodeId::SET);
     ASSERT_EQ(cpu.GetArgs(0), RegisterId::R1);
+}
+
+TEST(TestProcessorSuite, TestRegisterDereference)
+{
+    Memory16 programMemory(0x10000);
+    TestProcessor cpu(programMemory);
+    auto &rac = cpu.GetRegisters().at(RegisterId::RAC);
+    rac.Write(0xdead);
+
+    // write 0xbeef at the address 0xdead
+    cpu.GetMainMemory().Write(0xdead, 0xbe);
+    cpu.GetMainMemory().Write(0xdead + 1, 0xef);
+
+    uint16_t derefVal = cpu.DereferenceRegister(RegisterId::RAC);
+    ASSERT_EQ(derefVal, 0xbeef);
 }

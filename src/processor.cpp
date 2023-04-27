@@ -106,7 +106,7 @@ void Processor::PerformExecutionCycle()
 }
 
 Processor::Processor(Memory16 &programMemory)
-    : _internalMemory(InternalMemorySize), _mainMemory(0x10000), _programMemory(programMemory)
+    : _internalMemory(InternalMemorySize), _mainMemory(MainMemorySize), _programMemory(programMemory)
 {
     static_assert(static_cast<uint8_t>(RegisterId::RAC) == 0);
     for (auto i = RegisterId::RAC; i != RegisterId::END_OF_REGLIST; i = RegisterId(static_cast<uint8_t>(i) + 1))
@@ -124,8 +124,8 @@ void Processor::_CleanInstructionCycle()
     _instructionArgs.resize(0);
 }
 
-uint16_t Processor::DereferenceRegister(RegisterId reg)
+uint16_t Processor::_DereferenceRegister(RegisterId reg)
 {
     const auto address = _registers.at(reg).Read();
-    return _mainMemory.Read(address);
+    return (_mainMemory.Read(address) << 8) | _mainMemory.Read(address + 1);
 }
