@@ -18,7 +18,7 @@ TEST(TestMemorySuite, TestBasicReadWrite)
 
 TEST(TestMemorySuite, TestNonVolatileMemory)
 {
-    NVMemory16 mem(0x10000, "test_nvmemory.bin");
+    NVMemory16 mem(0x10000, "test/test_nvmemory.bin");
     uint8_t memdmp[] = {0xde, 0xad, 0xbe, 0xef, 0x0, 0x0, 0x0, 0x0, 0xc0, 0x8b, 0xad, 0xf0, 0x0d};
 
     for (unsigned i = 0; i < 13; ++i)
