@@ -1,5 +1,39 @@
 #include "processor.h"
+#include "instruction_impl.h"
 #include "common.h"
+
+void Processor::WriteRegister(RegisterId reg, uint16_t value)
+{
+    _registers.at(reg).Write(value);
+}
+
+uint16_t Processor::ReadRegister(RegisterId reg) const
+{
+    return _registers.at(reg).Read();
+}
+
+void Processor::PerformExecutionCycle()
+{
+    _FetchInstruction();
+    _DecodeInstruction();
+    _ExecuteInstruction();
+
+    // Instruction cycle is done at this point
+    _instructionStatus = InstructionCycle::Idle;
+}
+
+Processor::Processor(Memory16 &programMemory)
+    : _internalMemory(InternalMemorySize), _mainMemory(MainMemorySize), _programMemory(programMemory)
+{
+    static_assert(static_cast<uint8_t>(RegisterId::RAC) == 0);
+    for (auto i = RegisterId::RAC; i != RegisterId::END_OF_REGLIST; i = RegisterId(static_cast<uint8_t>(i) + 1))
+    {
+        _registers.insert({i, Register(static_cast<uint8_t>(i) * uint8_t{2}, _internalMemory)});
+    }
+
+    WriteRegister(RegisterId::RSP, RSP_DefaultAddress);
+    WriteRegister(RegisterId::RIP, 0);
+}
 
 uint16_t Processor::_ReadMemoryWord(Memory16 &memory, uint16_t address) const
 {
@@ -14,14 +48,16 @@ void Processor::_WriteMemoryWord(Memory16 &memory, uint16_t address, uint16_t va
     memory.Write(address + 1, static_cast<uint8_t>(value & 0x00ff));
 }
 
-void Processor::WriteRegister(RegisterId reg, uint16_t value)
+void Processor::_CleanInstructionCycle()
 {
-    _registers.at(reg).Write(value);
+    _decodedOpCodeId = OpCodeId::INVALID_INSTR;
+    _instructionArgs.resize(0);
 }
 
-uint16_t Processor::ReadRegister(RegisterId reg) const
+uint16_t Processor::_DereferenceRegister(RegisterId reg)
 {
-    return _registers.at(reg).Read();
+    const auto address = _registers.at(reg).Read();
+    return (_mainMemory.Read(address) << 8) | _mainMemory.Read(address + 1);
 }
 
 void Processor::_FetchInstruction()
@@ -85,47 +121,6 @@ void Processor::_ExecuteInstruction()
 {
     _instructionStatus = InstructionCycle::Execute;
 
-    // ALU operations ADD, SUB, MIL, DIV, AND, OR, XOR, NOT
-    // ALU-masked ops - INC, DEC
-    // Branching ops - JZ, JNZ
-    // Specific tasks - SET, SETZ, SETO, TSTB, PUSH, POP, NOP, STOP
-    // Data movement - MOV, LOAD, STOR
-
-    // End of instruction cycle
+    // TODO: End of instruction cycle
     _CleanInstructionCycle();
-}
-
-void Processor::PerformExecutionCycle()
-{
-    _FetchInstruction();
-    _DecodeInstruction();
-    _ExecuteInstruction();
-
-    // Instruction cycle is done at this point
-    _instructionStatus = InstructionCycle::Idle;
-}
-
-Processor::Processor(Memory16 &programMemory)
-    : _internalMemory(InternalMemorySize), _mainMemory(MainMemorySize), _programMemory(programMemory)
-{
-    static_assert(static_cast<uint8_t>(RegisterId::RAC) == 0);
-    for (auto i = RegisterId::RAC; i != RegisterId::END_OF_REGLIST; i = RegisterId(static_cast<uint8_t>(i) + 1))
-    {
-        _registers.insert({i, Register(static_cast<uint8_t>(i) * uint8_t{2}, _internalMemory)});
-    }
-
-    WriteRegister(RegisterId::RSP, RSP_DefaultAddress);
-    WriteRegister(RegisterId::RIP, 0);
-}
-
-void Processor::_CleanInstructionCycle()
-{
-    _decodedOpCodeId = OpCodeId::INVALID_INSTR;
-    _instructionArgs.resize(0);
-}
-
-uint16_t Processor::_DereferenceRegister(RegisterId reg)
-{
-    const auto address = _registers.at(reg).Read();
-    return (_mainMemory.Read(address) << 8) | _mainMemory.Read(address + 1);
 }

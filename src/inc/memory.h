@@ -11,16 +11,23 @@ template <typename TAddressSpace> class Memory
         _memory.resize(size, 0);
     }
 
+    // TODO: Read8 
     uint8_t Read(TAddressSpace address) const
     {
         _ValidateAddress(address);
         return _memory.at(address);
     }
 
-    void Write(TAddressSpace address, uint8_t value)
+    void Write8(TAddressSpace address, uint8_t value)
     {
         _ValidateAddress(address);
         _memory[address] = value;
+    }
+
+    void Write(TAddressSpace address, uint16_t value)
+    {
+        Write8(address, static_cast<uint8_t>(value >> 8));
+        Write8(address + 1, static_cast<uint8_t>(value & 0x00ff));
     }
 
     void Write(TAddressSpace address, const unsigned char *shellCode, size_t size)
@@ -50,19 +57,22 @@ template <typename TAddressSpace> class NVMemory : public Memory<TAddressSpace>
   public:
     NVMemory(size_t size, std::string filename) : Memory<TAddressSpace>(size), _filename(filename)
     {
-        _diskFile.open(_filename, std::ios::binary | std::ios::in);
-        _diskFile.read(reinterpret_cast<char *>(&(this->_memory[0])), this->_memory.size());
-        _diskFile.close();
+        _inFile.open(_filename, std::ios::binary | std::ios::in);
+        assert(_inFile.is_open());
+
+        _inFile.read(reinterpret_cast<char *>(&(this->_memory[0])), this->_memory.size());
+        _inFile.close();
     }
 
     ~NVMemory()
     {
-        _diskFile.open(_filename, std::ios::binary | std::ios::trunc | std::ios::out);
-        _diskFile.write(reinterpret_cast<char *>(&(this->_memory[0])), this->_memory.size());
-        _diskFile.close();
+        _inFile.open(_filename, std::ios::binary | std::ios::trunc | std::ios::out);
+        _inFile.write(reinterpret_cast<char *>(&(this->_memory[0])), this->_memory.size());
+        _inFile.close();
     }
 
   private:
-    std::fstream _diskFile;
+    std::fstream _inFile;
+    std::fstream _outFile;
     std::string _filename;
 };

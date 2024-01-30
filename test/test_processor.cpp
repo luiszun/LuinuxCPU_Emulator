@@ -102,8 +102,8 @@ TEST(TestProcessorSuite, TestRegisterDereference)
     rac.Write(0xdead);
 
     // write 0xbeef at the address 0xdead
-    cpu.GetMainMemory().Write(0xdead, 0xbe);
-    cpu.GetMainMemory().Write(0xdead + 1, 0xef);
+    cpu.GetMainMemory().Write8(0xdead, 0xbe);
+    cpu.GetMainMemory().Write8(0xdead + 1, 0xef);
 
     uint16_t derefVal = cpu.DereferenceRegister(RegisterId::RAC);
     ASSERT_EQ(derefVal, 0xbeef);

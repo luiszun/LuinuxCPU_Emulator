@@ -33,7 +33,8 @@ enum class FlagsRegister
     Negative,
     Trap,
     Reserved,
-    StackOverflow
+    StackOverflow,
+    Exception
 };
 
 extern const std::unordered_map<std::string, RegisterId> registerMap;
@@ -53,8 +54,7 @@ class Register
     }
     void Write(uint16_t value)
     {
-        _memory.Write(_address, static_cast<uint8_t>(value >> 8));
-        _memory.Write(_address + 1, static_cast<uint8_t>(value & 0x00ff));
+        _memory.Write(_address, value);
     }
 
   protected:

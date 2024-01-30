@@ -4,6 +4,8 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/google/googletest.git
   GIT_TAG 58d77fa8070e8cec2dc1ed015d66b454c8d78850 # release-1.12.1
 )
+
+set(UnitTest_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
@@ -26,5 +28,7 @@ target_link_libraries(Test PRIVATE
   processor
 )
 
-add_test(Test_gtest Test)
-configure_file(test_nvmemory.bin ${CMAKE_CURRENT_BINARY_DIR}/test_nvmemory.bin COPYONLY)
+# So that TestMate C++ can work with it
+configure_file("${PROJECT_DIR}/test/test_nvmemory.bin" "${UnitTest_DIR}/test_nvmemory.bin" COPYONLY)
+# So that CTest can work with it
+configure_file("${PROJECT_DIR}/test/test_nvmemory.bin" "${UnitTest_DIR}/../test_nvmemory.bin" COPYONLY)
