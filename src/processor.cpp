@@ -37,8 +37,8 @@ Processor::Processor(Memory16 &programMemory)
 
 uint16_t Processor::_ReadMemoryWord(Memory16 &memory, uint16_t address) const
 {
-    uint16_t value = (memory.Read(address) << 8);
-    value |= memory.Read(address + 1);
+    uint16_t value = (memory.Read8(address) << 8);
+    value |= memory.Read8(address + 1);
     return value;
 }
 
@@ -57,7 +57,7 @@ void Processor::_CleanInstructionCycle()
 uint16_t Processor::_DereferenceRegister(RegisterId reg)
 {
     const auto address = _registers.at(reg).Read();
-    return (_mainMemory.Read(address) << 8) | _mainMemory.Read(address + 1);
+    return (_mainMemory.Read8(address) << 8) | _mainMemory.Read8(address + 1);
 }
 
 void Processor::_FetchInstruction()

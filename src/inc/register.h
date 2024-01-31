@@ -48,8 +48,8 @@ class Register
 
     uint16_t Read() const
     {
-        uint16_t value = (_memory.Read(_address) << 8);
-        value |= _memory.Read(_address + 1);
+        uint16_t value = (_memory.Read8(_address) << 8);
+        value |= _memory.Read8(_address + 1);
         return value;
     }
     void Write(uint16_t value)

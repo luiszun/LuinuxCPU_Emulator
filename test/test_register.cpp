@@ -20,8 +20,8 @@ TEST(TestRegisterSuite, TestBasicReadWrite)
     EXPECT_EQ(r0Val, 0xdead);
     EXPECT_EQ(racVal, 0xbeef);
 
-    racVal = mem.Read(0x0);
+    racVal = mem.Read8(0x0);
     EXPECT_EQ(racVal, 0xbe);
-    racVal = mem.Read(0x1);
+    racVal = mem.Read8(0x1);
     EXPECT_EQ(racVal, 0xef);
 }

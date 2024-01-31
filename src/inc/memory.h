@@ -11,8 +11,7 @@ template <typename TAddressSpace> class Memory
         _memory.resize(size, 0);
     }
 
-    // TODO: Read8 
-    uint8_t Read(TAddressSpace address) const
+    uint8_t Read8(TAddressSpace address) const
     {
         _ValidateAddress(address);
         return _memory.at(address);
@@ -57,6 +56,32 @@ template <typename TAddressSpace> class NVMemory : public Memory<TAddressSpace>
   public:
     NVMemory(size_t size, std::string filename) : Memory<TAddressSpace>(size), _filename(filename)
     {
+        _FlushIn();
+    }
+
+    ~NVMemory()
+    {
+        _outFile.open(_filename, std::ios::binary | std::ios::trunc | std::ios::out);
+        _outFile.write(reinterpret_cast<char *>(&(this->_memory[0])), this->_memory.size());
+        _outFile.close();
+    }
+
+    void Flush()
+    {
+        _FlushOut();
+        _FlushIn();
+    }
+
+  private:
+    void _FlushOut()
+    {
+        _outFile.open(_filename, std::ios::binary | std::ios::trunc | std::ios::out);
+        _outFile.write(reinterpret_cast<char *>(&(this->_memory[0])), this->_memory.size());
+        _outFile.close();
+    }
+
+    void _FlushIn()
+    {
         _inFile.open(_filename, std::ios::binary | std::ios::in);
         assert(_inFile.is_open());
 
@@ -64,14 +89,6 @@ template <typename TAddressSpace> class NVMemory : public Memory<TAddressSpace>
         _inFile.close();
     }
 
-    ~NVMemory()
-    {
-        _inFile.open(_filename, std::ios::binary | std::ios::trunc | std::ios::out);
-        _inFile.write(reinterpret_cast<char *>(&(this->_memory[0])), this->_memory.size());
-        _inFile.close();
-    }
-
-  private:
     std::fstream _inFile;
     std::fstream _outFile;
     std::string _filename;
