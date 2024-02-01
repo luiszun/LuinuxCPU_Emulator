@@ -119,8 +119,10 @@ void Processor::_ExecuteInstruction()
 {
     // Let's create a table of function pointers to the instructions. That way we only reference those by OpCodeId
     typedef void (Processor::*OpFunction)(std::vector<std::shared_ptr<Register>>);
-    static const std::unordered_map<OpCodeId, OpFunction> opCodeFunctionTable = {
-        {OpCodeId::ADD, &Processor::ADD}, {OpCodeId::SUB, &Processor::SUB}, {OpCodeId::MUL, &Processor::MUL}};
+    static const std::unordered_map<OpCodeId, OpFunction> opCodeFunctionTable = {{OpCodeId::ADD, &Processor::ADD},
+                                                                                 {OpCodeId::SUB, &Processor::SUB},
+                                                                                 {OpCodeId::MUL, &Processor::MUL},
+                                                                                 {OpCodeId::SET, &Processor::SET}};
 
     _instructionStatus = InstructionCycle::Execute;
     assert(_decodedOpCodeId != OpCodeId::INVALID_INSTR);
@@ -136,7 +138,6 @@ void Processor::_ExecuteInstruction()
 
     _CleanInstructionCycle();
 }
-
 
 // TODO: Remove all these comments
 // ALU operations ADD, SUB, MIL, DIV, AND, OR, XOR, NOT
@@ -171,32 +172,37 @@ void Processor::_ExecuteInstruction()
 // TODO include this in the processor code?
 void Processor::ADD(std::vector<std::shared_ptr<Register>> args)
 {
-    auto OpA = args.at(0);
-    auto OpB = args.at(1);
+    auto opA = args.at(0);
+    auto opB = args.at(1);
     auto OpResult = args.at(2);
 
-    OpResult->Write(OpA->Read() + OpB->Read());
+    OpResult->Write(opA->Read() + opB->Read());
 }
 void Processor::SUB(std::vector<std::shared_ptr<Register>> args)
 {
-    auto OpA = args.at(0);
-    auto OpB = args.at(1);
+    auto opA = args.at(0);
+    auto opB = args.at(1);
     auto OpResult = args.at(2);
 
-    OpResult->Write(OpA->Read() - OpB->Read());
+    OpResult->Write(opA->Read() - opB->Read());
 }
 void Processor::MUL(std::vector<std::shared_ptr<Register>> args)
 {
-    auto OpA = args.at(0);
-    auto OpB = args.at(1);
+    auto opA = args.at(0);
+    auto opB = args.at(1);
     auto OpResult = args.at(2);
 
-    OpResult->Write(OpA->Read() * OpB->Read());
+    OpResult->Write(opA->Read() * opB->Read());
 }
 
 void Processor::STOP(std::vector<std::shared_ptr<Register>> args)
 {
     // args is not really used, but works for our table of ptrs to funcs.
-    _instructionStatus == InstructionCycle::Halted;
-    
+    _instructionStatus = InstructionCycle::Halted;
+}
+
+void Processor::SET(std::vector<std::shared_ptr<Register>> args)
+{
+    auto destReg = args.at(0);
+    destReg->Write(_2wordOperand);
 }

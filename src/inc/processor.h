@@ -58,6 +58,7 @@ class Processor
     void SUB(std::vector<std::shared_ptr<Register>> args);
     void MUL(std::vector<std::shared_ptr<Register>> args);
     void STOP(std::vector<std::shared_ptr<Register>> args);
+    void SET(std::vector<std::shared_ptr<Register>> args);
 
     Memory16 &_programMemory;
     Memory16 _mainMemory;
