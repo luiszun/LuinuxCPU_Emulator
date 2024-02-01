@@ -206,3 +206,248 @@ void Processor::SET(std::vector<std::shared_ptr<Register>> args)
     auto destReg = args.at(0);
     destReg->Write(_2wordOperand);
 }
+
+void Processor::DIV(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::AND(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::OR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::XOR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::JZ(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::JNZ(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::MOV(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::LOAD(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::STOR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::TSTB(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::SETZ(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::SETO(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::PUSH(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::POP(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::NOT(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::SHFR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::SHFL(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::INC(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::DEC(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::NOP(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::ADD_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::ADD_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::ADD_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::SUB_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::SUB_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::SUB_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::MUL_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::MUL_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::MUL_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::DIV_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::DIV_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::DIV_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::AND_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::AND_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::AND_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::OR_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::OR_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::OR_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::XOR_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::XOR_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::XOR_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::JZ_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::JZ_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::JZ_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::JNZ_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::JNZ_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::JNZ_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::MOV_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::MOV_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::MOV_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::TSTB_M(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::SETZ_M(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::SETO_M(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::SET_M(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::PUSH_M(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::POP_M(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::NOT_M(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::SHFR_M(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::SHFL_M(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::INC_M(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
+void Processor::DEC_M(std::vector<std::shared_ptr<Register>> args)
+{
+    assert(true); // not implemented
+}
