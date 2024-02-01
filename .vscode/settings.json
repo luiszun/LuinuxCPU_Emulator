@@ -88,7 +88,12 @@
 		"stack": "cpp",
 		"strstream": "cpp",
 		"typeindex": "cpp",
-		"valarray": "cpp"
+		"valarray": "cpp",
+		"*.tcc": "cpp",
+		"memory_resource": "cpp",
+		"random": "cpp",
+		"string_view": "cpp",
+		"shared_mutex": "cpp"
 	},
 	"C_Cpp.formatting": "clangFormat",
 	"C_Cpp.clang_format_fallbackStyle": "Microsoft",

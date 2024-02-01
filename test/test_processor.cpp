@@ -108,3 +108,8 @@ TEST(TestProcessorSuite, TestRegisterDereference)
     uint16_t derefVal = cpu.DereferenceRegister(RegisterId::RAC);
     ASSERT_EQ(derefVal, 0xbeef);
 }
+
+TEST(TestOpsProcessor, TestAddDSubMul)
+{
+    // TODO: Add some code to test this
+}

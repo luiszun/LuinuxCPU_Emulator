@@ -17,7 +17,8 @@ enum class InstructionCycle
     Idle = 0,
     Decode,
     Fetch,
-    Execute
+    Execute,
+    Halted
 };
 
 class Processor
@@ -29,6 +30,13 @@ class Processor
     uint16_t ReadRegister(RegisterId reg) const;
 
     void PerformExecutionCycle();
+    void ExecuteAll()
+    {
+        while (_instructionStatus != InstructionCycle::Halted)
+        {
+            PerformExecutionCycle();
+        }
+    }
 
     // TODO:
     // execute
@@ -44,6 +52,12 @@ class Processor
     void _ExecuteInstruction();
     void _CleanInstructionCycle();
     uint16_t _DereferenceRegister(RegisterId reg);
+
+    // All the instructions!
+    void ADD(std::vector<std::shared_ptr<Register>> args);
+    void SUB(std::vector<std::shared_ptr<Register>> args);
+    void MUL(std::vector<std::shared_ptr<Register>> args);
+    void STOP(std::vector<std::shared_ptr<Register>> args);
 
     Memory16 &_programMemory;
     Memory16 _mainMemory;
