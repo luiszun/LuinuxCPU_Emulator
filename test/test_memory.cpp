@@ -39,11 +39,15 @@ TEST(TestMemorySuite, TestWriteShellcode)
     Memory16 mem(0xff);
 
     const unsigned char shellCode[] = "\xde\xad\xbe\xef";
-    mem.Write(1, shellCode, 4);
+    mem.WritePayload(1, shellCode, 4);
 
     ASSERT_EQ(mem.Read8(0), 0);
     ASSERT_EQ(mem.Read8(1), 0xde);
     ASSERT_EQ(mem.Read8(2), 0xad);
     ASSERT_EQ(mem.Read8(3), 0xbe);
     ASSERT_EQ(mem.Read8(4), 0xef);
+
+    ASSERT_EQ(mem.Read16(0), 0x00de);
+    ASSERT_EQ(mem.Read16(2), 0xadbe);
+    ASSERT_EQ(mem.Read16(4), 0xef00);
 }

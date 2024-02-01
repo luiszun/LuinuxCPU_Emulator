@@ -68,7 +68,7 @@ TEST(TestProcessorSuite, TestProcessorExistence)
 TEST(TestProcessorSuite, TestFetch)
 {
     Memory16 programMemory(0x10000);
-    programMemory.Write(0, loop10xShellCode, 14);
+    programMemory.WritePayload(0, loop10xShellCode, 14);
     TestProcessor cpu(programMemory);
     cpu.FetchInstruction();
     ASSERT_EQ(cpu.GetFetchedInstruction(), 0x7625);
@@ -79,7 +79,7 @@ TEST(TestProcessorSuite, TestFetch)
 TEST(TestProcessorSuite, TestFetchAndDecode)
 {
     Memory16 programMemory(0x10000);
-    programMemory.Write(0, loop10xShellCode, 14);
+    programMemory.WritePayload(0, loop10xShellCode, 14);
     TestProcessor cpu(programMemory);
     cpu.FetchInstruction();
     cpu.DecodeInstruction();

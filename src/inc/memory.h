@@ -17,19 +17,27 @@ template <typename TAddressSpace> class Memory
         return _memory.at(address);
     }
 
+    uint16_t Read16(TAddressSpace address) const
+    {
+        _ValidateAddress(address);
+
+        return (static_cast<TAddressSpace>(_memory.at(address)) << 8) |
+               static_cast<TAddressSpace>(_memory.at(address + 1));
+    }
+
     void Write8(TAddressSpace address, uint8_t value)
     {
         _ValidateAddress(address);
         _memory[address] = value;
     }
 
-    void Write(TAddressSpace address, uint16_t value)
+    void Write16(TAddressSpace address, uint16_t value)
     {
         Write8(address, static_cast<uint8_t>(value >> 8));
         Write8(address + 1, static_cast<uint8_t>(value & 0x00ff));
     }
 
-    void Write(TAddressSpace address, const unsigned char *shellCode, size_t size)
+    void WritePayload(TAddressSpace address, const unsigned char *shellCode, size_t size)
     {
         _ValidateAddress(address);
         std::memcpy(&_memory[address], shellCode, size);
@@ -92,4 +100,36 @@ template <typename TAddressSpace> class NVMemory : public Memory<TAddressSpace>
     std::fstream _inFile;
     std::fstream _outFile;
     std::string _filename;
+};
+
+template <typename TAddressSpace> class NonByteAddressableMemory : public Memory<TAddressSpace>
+{
+  public:
+    NonByteAddressableMemory(size_t size)
+    {
+    }
+
+    uint16_t Read16(TAddressSpace address) const
+    {
+        _ValidateAddress(address);
+        size_t realAddress = address * sizeof(TAddressSpace);
+        // If this processor was little endian, we'd just put a ptr and return *p
+        return (static_cast<TAddressSpace>(this->_memory.at(realAddress) << 8) |
+               static_cast<TAddressSpace>(this->_memory.at(realAddress + 1)));
+    }
+
+    void Write16(TAddressSpace address, uint16_t value)
+    {
+        TAddressSpace realAddress = address * sizeof(TAddressSpace);
+        Write16(realAddress, value);
+    }
+
+  private:
+    void _ValidateAddress(TAddressSpace address) const
+    {
+        if (!(address * sizeof(TAddressSpace) < this->_memory.size()))
+        {
+            throw std::out_of_range("Used address is out of range");
+        }
+    }
 };

@@ -44,8 +44,7 @@ uint16_t Processor::_ReadMemoryWord(Memory16 &memory, uint16_t address) const
 
 void Processor::_WriteMemoryWord(Memory16 &memory, uint16_t address, uint16_t value)
 {
-    memory.Write(address, static_cast<uint8_t>(value >> 8));
-    memory.Write(address + 1, static_cast<uint8_t>(value & 0x00ff));
+    memory.Write16(address, value);
 }
 
 void Processor::_CleanInstructionCycle()

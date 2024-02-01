@@ -54,7 +54,7 @@ class Register
     }
     void Write(uint16_t value)
     {
-        _memory.Write(_address, value);
+        _memory.Write16(_address, value);
     }
 
   protected:
