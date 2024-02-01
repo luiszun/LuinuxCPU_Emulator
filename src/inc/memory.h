@@ -69,9 +69,7 @@ template <typename TAddressSpace> class NVMemory : public Memory<TAddressSpace>
 
     ~NVMemory()
     {
-        _outFile.open(_filename, std::ios::binary | std::ios::trunc | std::ios::out);
-        _outFile.write(reinterpret_cast<char *>(&(this->_memory[0])), this->_memory.size());
-        _outFile.close();
+        _FlushOut();
     }
 
     void Flush()
@@ -80,7 +78,7 @@ template <typename TAddressSpace> class NVMemory : public Memory<TAddressSpace>
         _FlushIn();
     }
 
-  private:
+  protected:
     void _FlushOut()
     {
         _outFile.open(_filename, std::ios::binary | std::ios::trunc | std::ios::out);
