@@ -155,80 +155,101 @@ void Processor::_ExecuteInstruction()
     _CleanInstructionCycle();
 }
 
+ConstantPair Processor::_Get_RR(std::vector<std::shared_ptr<Register>> args) const
+{
+    auto opA = args.at(0)->Read();
+    auto opB = args.at(1)->Read();
+    return std::make_pair(opA, opB);
+}
+void Processor::_Base_ADD(ConstantPair values, std::shared_ptr<Register> dest)
+{
+    dest->Write(values.first + values.second);
+}
+
+void Processor::_Base_SUB(ConstantPair values, std::shared_ptr<Register> dest)
+{
+    dest->Write(values.first - values.second);
+}
+void Processor::_Base_MUL(ConstantPair values, std::shared_ptr<Register> dest)
+{
+    dest->Write(values.first * values.second);
+}
+void Processor::_Base_DIV(ConstantPair values, std::shared_ptr<Register> dest)
+{
+    dest->Write(values.first / values.second);
+}
+void Processor::_Base_AND(ConstantPair values, std::shared_ptr<Register> dest)
+{
+    dest->Write(values.first & values.second);
+}
+void Processor::_Base_OR(ConstantPair values, std::shared_ptr<Register> dest)
+{
+    dest->Write(values.first | values.second);
+}
+void Processor::_Base_XOR(ConstantPair values, std::shared_ptr<Register> dest)
+{
+    dest->Write(values.first ^ values.second);
+}
+void Processor::_Base_JZ(ConstantPair values)
+{
+    if (0 == values.first)
+    {
+        WriteRegister(RegisterId::RIP, values.second);
+    }
+}
+void Processor::_Base_JNZ(ConstantPair values)
+{
+    if (0xffff == values.first)
+    {
+        WriteRegister(RegisterId::RIP, values.second);
+    }
+}
+
 void Processor::ADD(std::vector<std::shared_ptr<Register>> args)
 {
-    auto opA = args.at(0);
-    auto opB = args.at(1);
-    auto OpResult = args.at(2);
-
-    OpResult->Write(opA->Read() + opB->Read());
+    auto vals = _Get_RR(args);
+    _Base_ADD(vals, args.at(2));
 }
 void Processor::SUB(std::vector<std::shared_ptr<Register>> args)
 {
-    auto opA = args.at(0);
-    auto opB = args.at(1);
-    auto OpResult = args.at(2);
-
-    OpResult->Write(opA->Read() - opB->Read());
+    auto vals = _Get_RR(args);
+    _Base_SUB(vals, args.at(2));
 }
 void Processor::MUL(std::vector<std::shared_ptr<Register>> args)
 {
-    auto opA = args.at(0);
-    auto opB = args.at(1);
-    auto OpResult = args.at(2);
-
-    OpResult->Write(opA->Read() * opB->Read());
+    auto vals = _Get_RR(args);
+    _Base_MUL(vals, args.at(2));
 }
-
 void Processor::DIV(std::vector<std::shared_ptr<Register>> args)
 {
-    auto opA = args.at(0);
-    auto opB = args.at(1);
-    auto OpResult = args.at(2);
-
-    OpResult->Write(opA->Read() / opB->Read());
+    auto vals = _Get_RR(args);
+    _Base_DIV(vals, args.at(2));
 }
 void Processor::AND(std::vector<std::shared_ptr<Register>> args)
 {
-    auto opA = args.at(0);
-    auto opB = args.at(1);
-    auto OpResult = args.at(2);
-
-    OpResult->Write(opA->Read() & opB->Read());
+    auto vals = _Get_RR(args);
+    _Base_AND(vals, args.at(2));
 }
 void Processor::OR(std::vector<std::shared_ptr<Register>> args)
 {
-    auto opA = args.at(0);
-    auto opB = args.at(1);
-    auto OpResult = args.at(2);
-
-    OpResult->Write(opA->Read() | opB->Read());
+    auto vals = _Get_RR(args);
+    _Base_OR(vals, args.at(2));
 }
 void Processor::XOR(std::vector<std::shared_ptr<Register>> args)
 {
-    auto opA = args.at(0);
-    auto opB = args.at(1);
-    auto OpResult = args.at(2);
-
-    OpResult->Write(opA->Read() ^ opB->Read());
+    auto vals = _Get_RR(args);
+    _Base_XOR(vals, args.at(2));
 }
+
 void Processor::JZ(std::vector<std::shared_ptr<Register>> args)
 {
-    auto opA = args.at(0);
-    if (0 == opA)
-    {
-        auto opB = args.at(1);
-        WriteRegister(RegisterId::RIP, opB->Read());
-    }
+    auto vals = _Get_RR(args);
+    _Base_JZ(vals);
 }
 void Processor::JNZ(std::vector<std::shared_ptr<Register>> args)
 {
-    auto opA = args.at(0);
-    if (0xffff == opA->Read())
-    {
-        auto opB = args.at(1);
-        WriteRegister(RegisterId::RIP, opB->Read());
-    }
+    auto vals = _Get_RR(args);
+    _Base_JNZ(vals);
 }
 void Processor::MOV(std::vector<std::shared_ptr<Register>> args)
 {
@@ -320,27 +341,45 @@ void Processor::STOP(std::vector<std::shared_ptr<Register>> args)
 }
 void Processor::ADD_RM(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto valA = args.at(0)->Read();
+    auto valB = _DereferenceRegisterRead(args.at(1)->registerId);
+
+    _registers.at(RegisterId::RAC).Write(valA + valB);
 }
 void Processor::ADD_MR(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto valA = _DereferenceRegisterRead(args.at(0)->registerId);
+    auto valB = args.at(1)->Read();
+
+    _registers.at(RegisterId::RAC).Write(valA + valB);
 }
 void Processor::ADD_MM(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto valA = _DereferenceRegisterRead(args.at(0)->registerId);
+    auto valB = _DereferenceRegisterRead(args.at(1)->registerId);
+
+    _registers.at(RegisterId::RAC).Write(valA + valB);
 }
 void Processor::SUB_RM(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto valA = args.at(0)->Read();
+    auto valB = _DereferenceRegisterRead(args.at(1)->registerId);
+
+    _registers.at(RegisterId::RAC).Write(valA - valB);
 }
 void Processor::SUB_MR(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto valA = _DereferenceRegisterRead(args.at(0)->registerId);
+    auto valB = args.at(1)->Read();
+
+    _registers.at(RegisterId::RAC).Write(valA - valB);
 }
 void Processor::SUB_MM(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto valA = _DereferenceRegisterRead(args.at(0)->registerId);
+    auto valB = _DereferenceRegisterRead(args.at(1)->registerId);
+
+    _registers.at(RegisterId::RAC).Write(valA - valB);
 }
 void Processor::MUL_RM(std::vector<std::shared_ptr<Register>> args)
 {

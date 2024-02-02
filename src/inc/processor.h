@@ -12,6 +12,7 @@ using Memory16 = Memory<uint16_t>;
 using NVMemory16 = NVMemory<uint16_t>;
 using Memory8 = Memory<uint8_t>;
 
+typedef std::pair<uint16_t, uint16_t> ConstantPair;
 enum class InstructionCycle
 {
     Idle = 0,
@@ -56,6 +57,16 @@ class Processor
     void _DereferenceRegisterWrite(RegisterId reg, uint16_t value);
 
     // All the instructions!
+    ConstantPair _Get_RR(std::vector<std::shared_ptr<Register>> args) const;
+    void _Base_ADD(ConstantPair values, std::shared_ptr<Register> dest);
+    void _Base_SUB(ConstantPair values, std::shared_ptr<Register> dest);
+    void _Base_MUL(ConstantPair values, std::shared_ptr<Register> dest);
+    void _Base_DIV(ConstantPair values, std::shared_ptr<Register> dest);
+    void _Base_AND(ConstantPair values, std::shared_ptr<Register> dest);
+    void _Base_OR(ConstantPair values, std::shared_ptr<Register> dest);
+    void _Base_XOR(ConstantPair values, std::shared_ptr<Register> dest);
+    void _Base_JZ(ConstantPair values);
+    void _Base_JNZ(ConstantPair values);
     void ADD(std::vector<std::shared_ptr<Register>> args);
     void SUB(std::vector<std::shared_ptr<Register>> args);
     void MUL(std::vector<std::shared_ptr<Register>> args);
