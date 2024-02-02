@@ -146,37 +146,6 @@ void Processor::_ExecuteInstruction()
     _CleanInstructionCycle();
 }
 
-// TODO: Remove all these comments
-// ALU operations ADD, SUB, MIL, DIV, AND, OR, XOR, NOT
-// ALU-masked ops - INC, DEC
-// Branching ops - JZ, JNZ
-// Specific tasks - SET, SETZ, SETO, TSTB, PUSH, POP, NOP, STOP
-// Data movement - MOV, LOAD, STOR
-/*
-    {OpCodeId::DIV, OpCode{0x3, 3}},      {OpCodeId::AND, OpCode{0x4, 3}},     {OpCodeId::OR, OpCode{0x5, 3}},
-    {OpCodeId::XOR, OpCode{0x6, 3}},      {OpCodeId::JZ, OpCode{0x70, 2}},     {OpCodeId::JNZ, OpCode{0x71, 2}},
-    {OpCodeId::MOV, OpCode{0x72, 2}},     {OpCodeId::LOAD, OpCode{0x73, 2}},   {OpCodeId::STOR, OpCode{0x74, 2}},
-    {OpCodeId::TSTB, OpCode{0x75, 2}},    {OpCodeId::SETZ, OpCode{0x760, 1}},  {OpCodeId::SETO, OpCode{0x761, 1}},
-    {OpCodeId::SET, OpCode{0x762, 1}},    {OpCodeId::PUSH, OpCode{0x763, 1}},  {OpCodeId::POP, OpCode{0x764, 1}},
-    {OpCodeId::NOT, OpCode{0x765, 1}},    {OpCodeId::SHFR, OpCode{0x766, 1}},  {OpCodeId::SHFL, OpCode{0x767, 1}},
-    {OpCodeId::INC, OpCode{0x768, 1}},    {OpCodeId::DEC, OpCode{0x963, 1}},   {OpCodeId::NOP, OpCode{0x7690, 0}},
-    {OpCodeId::STOP, OpCode{0x7691, 0}},  {OpCodeId::ADD_RM, OpCode{0x77, 2}}, {OpCodeId::ADD_MR, OpCode{0x78, 2}},
-    {OpCodeId::ADD_MM, OpCode{0x79, 2}},  {OpCodeId::SUB_RM, OpCode{0x7a, 2}}, {OpCodeId::SUB_MR, OpCode{0x7b, 2}},
-    {OpCodeId::SUB_MM, OpCode{0x7c, 2}},  {OpCodeId::MUL_RM, OpCode{0x7d, 2}}, {OpCodeId::MUL_MR, OpCode{0x7e, 2}},
-    {OpCodeId::MUL_MM, OpCode{0x7f, 2}},  {OpCodeId::DIV_RM, OpCode{0x80, 2}}, {OpCodeId::DIV_MR, OpCode{0x81, 2}},
-    {OpCodeId::DIV_MM, OpCode{0x82, 2}},  {OpCodeId::AND_RM, OpCode{0x83, 2}}, {OpCodeId::AND_MR, OpCode{0x84, 2}},
-    {OpCodeId::AND_MM, OpCode{0x85, 2}},  {OpCodeId::OR_RM, OpCode{0x86, 2}},  {OpCodeId::OR_MR, OpCode{0x87, 2}},
-    {OpCodeId::OR_MM, OpCode{0x88, 2}},   {OpCodeId::XOR_RM, OpCode{0x89, 2}}, {OpCodeId::XOR_MR, OpCode{0x8a, 2}},
-    {OpCodeId::XOR_MM, OpCode{0x8b, 2}},  {OpCodeId::JZ_RM, OpCode{0x8c, 2}},  {OpCodeId::JZ_MR, OpCode{0x8d, 2}},
-    {OpCodeId::JZ_MM, OpCode{0x8e, 2}},   {OpCodeId::JNZ_RM, OpCode{0x8f, 2}}, {OpCodeId::JNZ_MR, OpCode{0x90, 2}},
-    {OpCodeId::JNZ_MM, OpCode{0x91, 2}},  {OpCodeId::MOV_RM, OpCode{0x92, 2}}, {OpCodeId::MOV_MR, OpCode{0x93, 2}},
-    {OpCodeId::MOV_MM, OpCode{0x94, 2}},  {OpCodeId::TSTB_M, OpCode{0x95, 2}}, {OpCodeId::SETZ_M, OpCode{0x76a, 1}},
-    {OpCodeId::SETO_M, OpCode{0x76b, 1}}, {OpCodeId::SET_M, OpCode{0x76c, 1}}, {OpCodeId::PUSH_M, OpCode{0x76d, 1}},
-    {OpCodeId::POP_M, OpCode{0x76e, 1}},  {OpCodeId::NOT_M, OpCode{0x76f, 1}}, {OpCodeId::SHFR_M, OpCode{0x960, 1}},
-    {OpCodeId::SHFL_M, OpCode{0x961, 1}}, {OpCodeId::INC_M, OpCode{0x962, 1}}, {OpCodeId::DEC_M, OpCode{0x964, 1}}};
-    */
-
-// TODO include this in the processor code?
 void Processor::ADD(std::vector<std::shared_ptr<Register>> args)
 {
     auto opA = args.at(0);
@@ -206,12 +175,6 @@ void Processor::STOP(std::vector<std::shared_ptr<Register>> args)
 {
     // args is not really used, but works for our table of ptrs to funcs.
     _instructionStatus = InstructionCycle::Halted;
-}
-
-void Processor::SET(std::vector<std::shared_ptr<Register>> args)
-{
-    auto destReg = args.at(0);
-    destReg->Write(_2wordOperand);
 }
 
 void Processor::DIV(std::vector<std::shared_ptr<Register>> args)
@@ -290,39 +253,59 @@ void Processor::TSTB(std::vector<std::shared_ptr<Register>> args)
 }
 void Processor::SETZ(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    opA->Write(0x0);
 }
 void Processor::SETO(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    opA->Write(0xffff);
+}
+void Processor::SET(std::vector<std::shared_ptr<Register>> args)
+{
+    auto opA = args.at(0);
+    opA->Write(_2wordOperand);
 }
 void Processor::PUSH(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    auto &RSP = _registers.at(RegisterId::RSP);
+    _DereferenceRegisterWrite(RSP.registerId, opA->Read());
+
+    RSP.Write(RSP.Read() + 2);
 }
 void Processor::POP(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    auto &RSP = _registers.at(RegisterId::RSP);
+    RSP.Write(RSP.Read() - 2);
+
+    opA->Write(_DereferenceRegisterRead(RSP.registerId));
 }
 void Processor::NOT(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    opA->Write(~(opA->Read()));
 }
 void Processor::SHFR(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    opA->Write(opA->Read() >> 1);
 }
 void Processor::SHFL(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    opA->Write(opA->Read() << 1);
 }
 void Processor::INC(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    opA->Write(opA->Read() + 1);
 }
 void Processor::DEC(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    opA->Write(opA->Read() - 1);
 }
 void Processor::NOP(std::vector<std::shared_ptr<Register>> args)
 {
