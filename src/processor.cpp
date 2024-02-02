@@ -62,7 +62,7 @@ void Processor::_CleanInstructionCycle()
     _instructionArgs.resize(0);
 }
 
-uint16_t Processor::_DereferenceRegisterRead(RegisterId reg)
+uint16_t Processor::_DereferenceRegisterRead(RegisterId reg) const
 {
     const auto address = _registers.at(reg).Read();
     return _mainMemory.Read16(address);
@@ -161,6 +161,25 @@ ConstantPair Processor::_Get_RR(std::vector<std::shared_ptr<Register>> args) con
     auto opB = args.at(1)->Read();
     return std::make_pair(opA, opB);
 }
+ConstantPair Processor::_Get_MR(std::vector<std::shared_ptr<Register>> args) const
+{
+    auto opA = _DereferenceRegisterRead(args.at(0)->registerId);
+    auto opB = args.at(1)->Read();
+    return std::make_pair(opA, opB);
+}
+ConstantPair Processor::_Get_RM(std::vector<std::shared_ptr<Register>> args) const
+{
+    auto opA = args.at(0)->Read();
+    auto opB = _DereferenceRegisterRead(args.at(1)->registerId);
+    return std::make_pair(opA, opB);
+}
+ConstantPair Processor::_Get_MM(std::vector<std::shared_ptr<Register>> args) const
+{
+    auto opA = _DereferenceRegisterRead(args.at(0)->registerId);
+    auto opB = _DereferenceRegisterRead(args.at(1)->registerId);
+    return std::make_pair(opA, opB);
+}
+
 void Processor::_Base_ADD(ConstantPair values, std::shared_ptr<Register> dest)
 {
     dest->Write(values.first + values.second);
@@ -240,7 +259,132 @@ void Processor::XOR(std::vector<std::shared_ptr<Register>> args)
     auto vals = _Get_RR(args);
     _Base_XOR(vals, args.at(2));
 }
-
+void Processor::ADD_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MR(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_ADD(vals, racPtr);
+}
+void Processor::SUB_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MR(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_SUB(vals, racPtr);
+}
+void Processor::MUL_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MR(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_MUL(vals, racPtr);
+}
+void Processor::DIV_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MR(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_DIV(vals, racPtr);
+}
+void Processor::AND_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MR(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_AND(vals, racPtr);
+}
+void Processor::OR_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MR(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_OR(vals, racPtr);
+}
+void Processor::XOR_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MR(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_XOR(vals, racPtr);
+}
+void Processor::ADD_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_ADD(vals, racPtr);
+}
+void Processor::SUB_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_SUB(vals, racPtr);
+}
+void Processor::MUL_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_MUL(vals, racPtr);
+}
+void Processor::DIV_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_DIV(vals, racPtr);
+}
+void Processor::AND_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_AND(vals, racPtr);
+}
+void Processor::OR_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_OR(vals, racPtr);
+}
+void Processor::XOR_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_XOR(vals, racPtr);
+}
+void Processor::ADD_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_ADD(vals, racPtr);
+}
+void Processor::SUB_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_SUB(vals, racPtr);
+}
+void Processor::MUL_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_MUL(vals, racPtr);
+}
+void Processor::DIV_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_DIV(vals, racPtr);
+}
+void Processor::AND_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_AND(vals, racPtr);
+}
+void Processor::OR_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_OR(vals, racPtr);
+}
+void Processor::XOR_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_XOR(vals, racPtr);
+}
 void Processor::JZ(std::vector<std::shared_ptr<Register>> args)
 {
     auto vals = _Get_RR(args);
@@ -272,8 +416,14 @@ void Processor::STOR(std::vector<std::shared_ptr<Register>> args)
 }
 void Processor::TSTB(std::vector<std::shared_ptr<Register>> args)
 {
-    auto opA = args.at(0);
-    auto opB = args.at(1);
+    auto opA = args.at(0)->Read();
+    auto opB = args.at(1)->Read();
+    bool isBitOn = opB & (1 << opA);
+    if (isBitOn)
+    {
+        uint16_t currentFlags = _registers.at(RegisterId::RFL).Read();
+        _registers.at(RegisterId::RFL).Write(currentFlags | GetRegisterFlagMask(FlagsRegister::Zero));
+    }
 }
 void Processor::SETZ(std::vector<std::shared_ptr<Register>> args)
 {
@@ -339,185 +489,99 @@ void Processor::STOP(std::vector<std::shared_ptr<Register>> args)
     // args is not really used, but works for our table of ptrs to funcs.
     _instructionStatus = InstructionCycle::Halted;
 }
-void Processor::ADD_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto valA = args.at(0)->Read();
-    auto valB = _DereferenceRegisterRead(args.at(1)->registerId);
-
-    _registers.at(RegisterId::RAC).Write(valA + valB);
-}
-void Processor::ADD_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    auto valA = _DereferenceRegisterRead(args.at(0)->registerId);
-    auto valB = args.at(1)->Read();
-
-    _registers.at(RegisterId::RAC).Write(valA + valB);
-}
-void Processor::ADD_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto valA = _DereferenceRegisterRead(args.at(0)->registerId);
-    auto valB = _DereferenceRegisterRead(args.at(1)->registerId);
-
-    _registers.at(RegisterId::RAC).Write(valA + valB);
-}
-void Processor::SUB_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto valA = args.at(0)->Read();
-    auto valB = _DereferenceRegisterRead(args.at(1)->registerId);
-
-    _registers.at(RegisterId::RAC).Write(valA - valB);
-}
-void Processor::SUB_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    auto valA = _DereferenceRegisterRead(args.at(0)->registerId);
-    auto valB = args.at(1)->Read();
-
-    _registers.at(RegisterId::RAC).Write(valA - valB);
-}
-void Processor::SUB_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto valA = _DereferenceRegisterRead(args.at(0)->registerId);
-    auto valB = _DereferenceRegisterRead(args.at(1)->registerId);
-
-    _registers.at(RegisterId::RAC).Write(valA - valB);
-}
-void Processor::MUL_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::MUL_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::MUL_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::DIV_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::DIV_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::DIV_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::AND_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::AND_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::AND_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::OR_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::OR_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::OR_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::XOR_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::XOR_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::XOR_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::JZ_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
 void Processor::JZ_MR(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
-}
-void Processor::JZ_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
-}
-void Processor::JNZ_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    assert(true); // not implemented
+    _Base_JZ(_Get_MR(args));
 }
 void Processor::JNZ_MR(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    _Base_JNZ(_Get_MR(args));
 }
-void Processor::JNZ_MM(std::vector<std::shared_ptr<Register>> args)
+void Processor::JZ_RM(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    _Base_JZ(_Get_RM(args));
+}
+void Processor::JNZ_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    _Base_JNZ(_Get_RM(args));
 }
 void Processor::MOV_RM(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0)->Read();
+    _DereferenceRegisterWrite(args.at(1)->registerId, opA);
 }
 void Processor::MOV_MR(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    uint16_t opA = _DereferenceRegisterRead(args.at(0)->registerId);
+    auto opB = args.at(1);
+    opB->Write(opA);
 }
 void Processor::MOV_MM(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    uint16_t opA = _DereferenceRegisterRead(args.at(0)->registerId);
+    _DereferenceRegisterWrite(args.at(1)->registerId, opA);
 }
 void Processor::TSTB_M(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0)->Read();
+    auto opB = _DereferenceRegisterRead(args.at(1)->registerId);
+    bool isBitOn = opB & (1 << opA);
+    if (isBitOn)
+    {
+        uint16_t currentFlags = _registers.at(RegisterId::RFL).Read();
+        _registers.at(RegisterId::RFL).Write(currentFlags | GetRegisterFlagMask(FlagsRegister::Zero));
+    }
 }
 void Processor::SETZ_M(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    _DereferenceRegisterWrite(args.at(0)->registerId, 0x0);
 }
 void Processor::SETO_M(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    _DereferenceRegisterWrite(args.at(0)->registerId, 0xffff);
 }
 void Processor::SET_M(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    _DereferenceRegisterWrite(args.at(0)->registerId, _2wordOperand);
 }
 void Processor::PUSH_M(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
+    auto &RSP = _registers.at(RegisterId::RSP);
+    _DereferenceRegisterWrite(RSP.registerId, derefA);
+
+    RSP.Write(RSP.Read() + 2);
 }
 void Processor::POP_M(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto &RSP = _registers.at(RegisterId::RSP);
+    RSP.Write(RSP.Read() - 2);
+
+    _DereferenceRegisterWrite(args.at(0)->registerId, _DereferenceRegisterRead(RSP.registerId));
 }
 void Processor::NOT_M(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
+    derefA = ~derefA;
+    _DereferenceRegisterWrite(args.at(0)->registerId, derefA);
 }
 void Processor::SHFR_M(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
+    _DereferenceRegisterWrite(args.at(0)->registerId, derefA >> 1);
 }
 void Processor::SHFL_M(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
+    _DereferenceRegisterWrite(args.at(0)->registerId, derefA << 1);
 }
 void Processor::INC_M(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
+    _DereferenceRegisterWrite(args.at(0)->registerId, derefA + 1);
 }
 void Processor::DEC_M(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
+    _DereferenceRegisterWrite(args.at(0)->registerId, derefA - 1);
 }

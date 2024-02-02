@@ -53,11 +53,20 @@ class Processor
     void _DecodeInstruction();
     void _ExecuteInstruction();
     void _CleanInstructionCycle();
-    uint16_t _DereferenceRegisterRead(RegisterId reg);
+    uint16_t _DereferenceRegisterRead(RegisterId reg) const;
     void _DereferenceRegisterWrite(RegisterId reg, uint16_t value);
+    inline uint16_t GetRegisterFlagMask(FlagsRegister flag) const
+    {
+        return (1 << static_cast<uint16_t>(FlagsRegister::Zero));
+    }
 
     // All the instructions!
+
+    // TODO: Org some of these into ALU
     ConstantPair _Get_RR(std::vector<std::shared_ptr<Register>> args) const;
+    ConstantPair _Get_MR(std::vector<std::shared_ptr<Register>> args) const;
+    ConstantPair _Get_RM(std::vector<std::shared_ptr<Register>> args) const;
+    ConstantPair _Get_MM(std::vector<std::shared_ptr<Register>> args) const;
     void _Base_ADD(ConstantPair values, std::shared_ptr<Register> dest);
     void _Base_SUB(ConstantPair values, std::shared_ptr<Register> dest);
     void _Base_MUL(ConstantPair values, std::shared_ptr<Register> dest);
