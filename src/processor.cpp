@@ -13,6 +13,15 @@ uint16_t Processor::ReadRegister(RegisterId reg) const
 
 void Processor::PerformExecutionCycle()
 {
+    if (_instructionStatus == InstructionCycle::Halted)
+    {
+        return;
+    }
+    _DoPerformExecutionCycle();
+}
+
+void Processor::_DoPerformExecutionCycle()
+{
     _FetchInstruction();
     _DecodeInstruction();
     _ExecuteInstruction();
@@ -171,12 +180,6 @@ void Processor::MUL(std::vector<std::shared_ptr<Register>> args)
     OpResult->Write(opA->Read() * opB->Read());
 }
 
-void Processor::STOP(std::vector<std::shared_ptr<Register>> args)
-{
-    // args is not really used, but works for our table of ptrs to funcs.
-    _instructionStatus = InstructionCycle::Halted;
-}
-
 void Processor::DIV(std::vector<std::shared_ptr<Register>> args)
 {
     auto opA = args.at(0);
@@ -309,7 +312,11 @@ void Processor::DEC(std::vector<std::shared_ptr<Register>> args)
 }
 void Processor::NOP(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+}
+void Processor::STOP(std::vector<std::shared_ptr<Register>> args)
+{
+    // args is not really used, but works for our table of ptrs to funcs.
+    _instructionStatus = InstructionCycle::Halted;
 }
 void Processor::ADD_RM(std::vector<std::shared_ptr<Register>> args)
 {

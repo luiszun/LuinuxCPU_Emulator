@@ -34,7 +34,7 @@ class Processor
     {
         while (_instructionStatus != InstructionCycle::Halted)
         {
-            PerformExecutionCycle();
+            _DoPerformExecutionCycle();
         }
     }
 
@@ -45,6 +45,7 @@ class Processor
     // pause
 
   protected:
+    void _DoPerformExecutionCycle();
     uint16_t _ReadMemoryWord(Memory16 &memory, uint16_t address) const;
     void _WriteMemoryWord(Memory16 &memory, uint16_t address, uint16_t value);
     void _FetchInstruction();
