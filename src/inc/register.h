@@ -42,7 +42,7 @@ extern const std::unordered_map<std::string, RegisterId> registerMap;
 class Register
 {
   public:
-    Register(uint16_t address, Memory8 &memory) : _address(address), _memory(memory)
+    Register(uint16_t address, Memory8 &memory, RegisterId inRegisterId) : _address(address), _memory(memory), registerId(inRegisterId)
     {
     }
 
@@ -56,6 +56,8 @@ class Register
     {
         _memory.Write16(_address, value);
     }
+
+    const RegisterId registerId;
 
   protected:
     uint8_t _address;

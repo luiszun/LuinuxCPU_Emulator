@@ -51,7 +51,8 @@ class Processor
     void _DecodeInstruction();
     void _ExecuteInstruction();
     void _CleanInstructionCycle();
-    uint16_t _DereferenceRegister(RegisterId reg);
+    uint16_t _DereferenceRegisterRead(RegisterId reg);
+    void _DereferenceRegisterWrite(RegisterId reg, uint16_t value);
 
     // All the instructions!
     void ADD(std::vector<std::shared_ptr<Register>> args);

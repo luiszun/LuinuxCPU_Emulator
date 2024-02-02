@@ -55,7 +55,7 @@ class TestProcessor : public Processor
 
     uint16_t DereferenceRegister(RegisterId reg)
     {
-        return _DereferenceRegister(reg);
+        return _DereferenceRegisterRead(reg);
     }
 };
 

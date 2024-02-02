@@ -24,10 +24,11 @@ void Processor::PerformExecutionCycle()
 Processor::Processor(Memory16 &programMemory)
     : _internalMemory(InternalMemorySize), _mainMemory(MainMemorySize), _programMemory(programMemory)
 {
+    // Initialize the registers
     static_assert(static_cast<uint8_t>(RegisterId::RAC) == 0);
     for (auto i = RegisterId::RAC; i != RegisterId::END_OF_REGLIST; i = RegisterId(static_cast<uint8_t>(i) + 1))
     {
-        _registers.insert({i, Register(static_cast<uint8_t>(i) * uint8_t{2}, _internalMemory)});
+        _registers.insert({i, Register(static_cast<uint8_t>(i) * uint8_t{2}, _internalMemory, i)});
     }
 
     WriteRegister(RegisterId::RSP, RSP_DefaultAddress);
@@ -52,10 +53,16 @@ void Processor::_CleanInstructionCycle()
     _instructionArgs.resize(0);
 }
 
-uint16_t Processor::_DereferenceRegister(RegisterId reg)
+uint16_t Processor::_DereferenceRegisterRead(RegisterId reg)
 {
     const auto address = _registers.at(reg).Read();
-    return (_mainMemory.Read8(address) << 8) | _mainMemory.Read8(address + 1);
+    return _mainMemory.Read16(address);
+}
+
+void Processor::_DereferenceRegisterWrite(RegisterId reg, uint16_t value)
+{
+    const auto address = _registers.at(reg).Read();
+    _mainMemory.Write16(address, value);
 }
 
 void Processor::_FetchInstruction()
@@ -209,43 +216,77 @@ void Processor::SET(std::vector<std::shared_ptr<Register>> args)
 
 void Processor::DIV(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    auto opB = args.at(1);
+    auto OpResult = args.at(2);
+
+    OpResult->Write(opA->Read() / opB->Read());
 }
 void Processor::AND(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    auto opB = args.at(1);
+    auto OpResult = args.at(2);
+
+    OpResult->Write(opA->Read() & opB->Read());
 }
 void Processor::OR(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    auto opB = args.at(1);
+    auto OpResult = args.at(2);
+
+    OpResult->Write(opA->Read() | opB->Read());
 }
 void Processor::XOR(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    auto opB = args.at(1);
+    auto OpResult = args.at(2);
+
+    OpResult->Write(opA->Read() ^ opB->Read());
 }
 void Processor::JZ(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    if (0 == opA)
+    {
+        auto opB = args.at(1);
+        WriteRegister(RegisterId::RIP, opB->Read());
+    }
 }
 void Processor::JNZ(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    if (0xffff == opA->Read())
+    {
+        auto opB = args.at(1);
+        WriteRegister(RegisterId::RIP, opB->Read());
+    }
 }
 void Processor::MOV(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    auto opB = args.at(1);
+    opB->Write(opA->Read());
 }
 void Processor::LOAD(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    auto opB = args.at(1);
+
+    uint16_t valueAtAddress = _DereferenceRegisterRead(opA->registerId);
+    opB->Write(valueAtAddress);
 }
 void Processor::STOR(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    auto opB = args.at(1);
 }
 void Processor::TSTB(std::vector<std::shared_ptr<Register>> args)
 {
-    assert(true); // not implemented
+    auto opA = args.at(0);
+    auto opB = args.at(1);
 }
 void Processor::SETZ(std::vector<std::shared_ptr<Register>> args)
 {
