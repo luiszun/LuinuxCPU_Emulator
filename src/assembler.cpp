@@ -138,7 +138,7 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t inst
     return EncodeInstructionWord(opCode, registerArgs);
 }
 
-std::vector<uint16_t> Assembler::AssembleFile()
+std::vector<uint8_t> Assembler::AssembleFile()
 {
     std::string stringLine;
     std::string stringProgram;
@@ -164,11 +164,11 @@ std::vector<uint16_t> Assembler::AssembleFile()
     return AssembleString(stringProgram);
 }
 
-std::vector<uint16_t> Assembler::AssembleString(std::string program)
+std::vector<uint8_t> Assembler::AssembleString(std::string program)
 {
     std::stringstream ssProgram(program);
     std::string stringLine;
-    std::vector<uint16_t> binProgram;
+    std::vector<uint8_t> binProgram;
 
     // Address for the instruction to be written.
     uint16_t instructionIndex = 0;
@@ -184,11 +184,13 @@ std::vector<uint16_t> Assembler::AssembleString(std::string program)
         try
         {
             auto instr = EncodeInstructionWord(stringLine, instructionIndex);
-            binProgram.push_back(_WordToBigEndian(instr));
+            binProgram.push_back(instr >> 8);
+            binProgram.push_back(instr & 0x00ff);
             instructionIndex += 2;
             if (_pendingLiteralValue)
             {
-                binProgram.push_back(_WordToBigEndian(_literalValue));
+                binProgram.push_back(_literalValue >> 8);
+                binProgram.push_back(_literalValue & 0x00ff);
                 _pendingLiteralValue = false;
                 instructionIndex += 2;
             }
@@ -211,7 +213,7 @@ bool Assembler::_ContainsInstruction(std::string line) const
     return true;
 }
 
-void Assembler::WriteBinaryFile(std::vector<uint16_t> &program, bool stdOutPayload)
+void Assembler::WriteBinaryFile(std::vector<uint8_t> &program, bool stdOutPayload)
 {
     _outFileStream.open(_outFilename, std::ios::trunc | std::ios::binary);
     if (!_outFileStream)
@@ -219,7 +221,7 @@ void Assembler::WriteBinaryFile(std::vector<uint16_t> &program, bool stdOutPaylo
         throw std::runtime_error("Cannot create or write to output file.");
     }
 
-    _outFileStream.write(reinterpret_cast<char *>(&(program[0])), program.size() * sizeof(uint16_t));
+    _outFileStream.write(reinterpret_cast<char *>(&(program[0])), program.size());
 
     _inFileStream.close();
     _outFileStream.close();
@@ -247,14 +249,11 @@ std::string Assembler::_RemoveComments(std::string str) const
 std::string Assembler::GetAssembledPayloadHex() const
 {
     // 16 chars to account for each instr being \xaa\xff
-    const size_t payloadSize = (_assembledPayload.size() * 8) + 1;
 
-    std::shared_ptr<char[]> payload(new char[payloadSize]);
+    std::shared_ptr<char[]> payload(new char[_assembledPayload.size() * 4 + 1]);
     for (unsigned i = 0; i < _assembledPayload.size(); ++i)
     {
-        char * baseAddress = payload.get() + (i*8);
-        sprintf(baseAddress, "\\x%02x", static_cast<uint8_t>(_assembledPayload.at(i) >> 8));
-        sprintf(baseAddress + 4, "\\x%02x", static_cast<uint8_t>(_assembledPayload.at(i) & 0x00ff));
+        sprintf(payload.get() + (i * 4), "\\x%02x", _assembledPayload.at(i));
     }
     return std::string(payload.get());
 }

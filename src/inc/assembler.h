@@ -18,9 +18,9 @@ class Assembler
     uint16_t EncodeInstructionWord(const OpCode &opCode, const std::array<RegisterId, 3> &args);
     uint16_t EncodeInstructionWord(std::string instruction, uint16_t instIndex = 0);
     uint16_t GetValueFromStringLiteral(std::string literal) const;
-    std::vector<uint16_t> AssembleFile();
-    std::vector<uint16_t> AssembleString(std::string program);
-    void WriteBinaryFile(std::vector<uint16_t> &program, bool stdOutPayload = false);
+    std::vector<uint8_t> AssembleFile();
+    std::vector<uint8_t> AssembleString(std::string program);
+    void WriteBinaryFile(std::vector<uint8_t> &program, bool stdOutPayload = false);
     std::string GetAssembledPayloadHex() const;
 
   protected:
@@ -29,7 +29,7 @@ class Assembler
     std::string _RemoveComments(std::string str) const;
     bool _ContainsInstruction(std::string line) const;
 
-    std::vector<uint16_t> _assembledPayload;
+    std::vector<uint8_t> _assembledPayload;
     std::string _inFilename;
     std::string _outFilename;
     std::ifstream _inFileStream;

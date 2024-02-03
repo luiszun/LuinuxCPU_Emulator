@@ -81,8 +81,7 @@ TEST(TestAssemblerSuite, TestMultilineProgram)
     Assembler asmObj;
     std::string program = "SET R0, h'100\nSET R1, h'001\nAND R0, R1, R2";
 
-    // Because any arm, amd64 or x86 are little endian, write in little endian.
-    std::vector<uint16_t> expectedBinary{0x2576, 0x0001, 0x2676, 0x0100, 0x6745};
+    std::vector<uint8_t> expectedBinary{0x76, 0x25, 0x01, 0x00, 0x76, 0x26, 0x00, 0x01, 0x45, 0x67};
 
     auto binProgram = asmObj.AssembleString(program);
     ASSERT_EQ(expectedBinary, binProgram);
@@ -93,8 +92,7 @@ TEST(TestAssemblerSuite, TestGoto)
     Assembler asmObj;
     std::string program = "SET R0, h'100\nSET R1, h'001\nAND R0, R1, R2\ngoto:R0";
 
-    // Because any arm, amd64 or x86 are little endian, write in little endian.
-    std::vector<uint16_t> expectedBinary{0x2576, 0x0001, 0x2676, 0x0100, 0x6745, 0x2576, 0x0e00};
+    std::vector<uint8_t> expectedBinary{0x76, 0x25, 0x01, 0x00, 0x76, 0x26, 0x00, 0x01, 0x45, 0x67, 0x76, 0x25, 0x00, 0x0e};
 
     auto binProgram = asmObj.AssembleString(program);
     ASSERT_EQ(expectedBinary, binProgram);
@@ -105,8 +103,7 @@ TEST(TestAssemblerSuite, TestEmptyLinesAndCommentLines)
     Assembler asmObj;
     std::string program = "\n\nSET R0, h'100\n\nSET R1, h'001;cool comment\n;lalalala\n\n\nAND R0, R1, R2\n";
 
-    // Because any arm, amd64 or x86 are little endian, write in little endian.
-    std::vector<uint16_t> expectedBinary{0x2576, 0x0001, 0x2676, 0x0100, 0x6745};
+    std::vector<uint8_t> expectedBinary{0x76, 0x25, 0x01, 0x00, 0x76, 0x26, 0x00, 0x01, 0x45, 0x67};
 
     auto binProgram = asmObj.AssembleString(program);
     ASSERT_EQ(expectedBinary, binProgram);
@@ -122,12 +119,14 @@ TEST(TestAssemblerSuite, TestLoop10x)
                           "SUB R0, R10, R1\n"
                           "JNZ R1, R2\n"
                           "STOP";
-    std::vector<uint16_t> expectedBinary{0x2576, 0x0a00, 0x2f76, 0x0000, 0x2776, 0x0c00, 0x8f76, 0xf615, 0x6771, 0x9176};
+    std::vector<uint8_t> expectedBinary{0x76, 0x25, 0x00, 0x0a, 0x76, 0x2f, 0x00, 0x00, 0x76, 0x27,
+                                         0x00, 0x0c, 0x76, 0x8f, 0x15, 0xf6, 0x71, 0x67, 0x76, 0x91};
 
-
-    auto binProgram =  asmObj.AssembleString(program);
+    auto binProgram = asmObj.AssembleString(program);
     std::string str = asmObj.GetAssembledPayloadHex();
 
-    ASSERT_STREQ(str.c_str(), "\\x25\\x76\\x0a\\x00\\x2f\\x76\\x00\\x00\\x27\\x76\\x0c\\x00\\x8f\\x76\\xf6\\x15\\x67\\x71\\x91\\x76");
+    ASSERT_STREQ(
+        str.c_str(),
+        "\\x76\\x25\\x00\\x0a\\x76\\x2f\\x00\\x00\\x76\\x27\\x00\\x0c\\x76\\x8f\\x15\\xf6\\x71\\x67\\x76\\x91");
     ASSERT_EQ(expectedBinary, binProgram);
 }
