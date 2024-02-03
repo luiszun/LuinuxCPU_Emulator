@@ -198,6 +198,7 @@ std::vector<uint16_t> Assembler::AssembleString(std::string program)
             throw std::runtime_error(e.what() + std::string(" on line i"));
         }
     }
+    _assembledPayload = binProgram;
     return binProgram;
 }
 bool Assembler::_ContainsInstruction(std::string line) const
@@ -210,7 +211,7 @@ bool Assembler::_ContainsInstruction(std::string line) const
     return true;
 }
 
-void Assembler::WriteBinaryFile(std::vector<uint16_t> &program)
+void Assembler::WriteBinaryFile(std::vector<uint16_t> &program, bool stdOutPayload)
 {
     _outFileStream.open(_outFilename, std::ios::trunc | std::ios::binary);
     if (!_outFileStream)
@@ -222,6 +223,14 @@ void Assembler::WriteBinaryFile(std::vector<uint16_t> &program)
 
     _inFileStream.close();
     _outFileStream.close();
+
+    if (stdOutPayload)
+    {
+
+        std::cout << std::endl;
+        std::cout << GetAssembledPayloadHex();
+        std::cout << std::endl;
+    }
 }
 
 bool Assembler::_IsSpecialInstruction(OpCodeId id) const
@@ -233,4 +242,19 @@ bool Assembler::_IsSpecialInstruction(OpCodeId id) const
 std::string Assembler::_RemoveComments(std::string str) const
 {
     return str.substr(0, str.find(";"));
+}
+
+std::string Assembler::GetAssembledPayloadHex() const
+{
+    // 16 chars to account for each instr being \xaa\xff
+    const size_t payloadSize = (_assembledPayload.size() * 8) + 1;
+
+    std::shared_ptr<char[]> payload(new char[payloadSize]);
+    for (unsigned i = 0; i < _assembledPayload.size(); ++i)
+    {
+        char * baseAddress = payload.get() + (i*8);
+        sprintf(baseAddress, "\\x%02x", static_cast<uint8_t>(_assembledPayload.at(i) >> 8));
+        sprintf(baseAddress + 4, "\\x%02x", static_cast<uint8_t>(_assembledPayload.at(i) & 0x00ff));
+    }
+    return std::string(payload.get());
 }

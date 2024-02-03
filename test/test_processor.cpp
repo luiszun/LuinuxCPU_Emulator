@@ -109,7 +109,7 @@ TEST(TestProcessorSuite, TestRegisterDereference)
     ASSERT_EQ(derefVal, 0xbeef);
 }
 
-TEST(TestOpsProcessor, TestAddDSubMul)
+TEST(TestOpsProcessor, Test10xLoop)
 {
     // TODO: Add some code to test this
 }

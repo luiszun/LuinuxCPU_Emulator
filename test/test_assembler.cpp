@@ -122,5 +122,7 @@ TEST(TestAssemblerSuite, TestLoop10x)
     std::vector<uint16_t> expectedBinary{0x2576, 0x0a00, 0x2f76, 0x0000, 0x2776, 0x0c00, 0x8f76, 0xf615, 0x6771};
 
     auto binProgram = asmObj.AssembleString(program);
+
+    auto str = asmObj.GetAssembledPayloadHex();
     ASSERT_EQ(expectedBinary, binProgram);
 }
