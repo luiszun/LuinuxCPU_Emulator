@@ -44,18 +44,6 @@ Processor::Processor(Memory16 &programMemory)
     WriteRegister(RegisterId::RIP, 0);
 }
 
-uint16_t Processor::_ReadMemoryWord(Memory16 &memory, uint16_t address) const
-{
-    uint16_t value = (memory.Read8(address) << 8);
-    value |= memory.Read8(address + 1);
-    return value;
-}
-
-void Processor::_WriteMemoryWord(Memory16 &memory, uint16_t address, uint16_t value)
-{
-    memory.Write16(address, value);
-}
-
 void Processor::_CleanInstructionCycle()
 {
     _decodedOpCodeId = OpCodeId::INVALID_INSTR;
@@ -78,7 +66,7 @@ void Processor::_FetchInstruction()
 {
     _instructionStatus = InstructionCycle::Fetch;
     uint16_t ripVal = ReadRegister(RegisterId::RIP);
-    _fetchedInstruction = _ReadMemoryWord(_programMemory, ripVal);
+    _fetchedInstruction = _programMemory.Read16(ripVal);
     WriteRegister(RegisterId::RIP, ripVal + sizeof(uint16_t));
 }
 

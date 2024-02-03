@@ -47,6 +47,8 @@ template <typename TAddressSpace> class Memory
     {
         _ValidateAddress(address);
         std::memcpy(&_memory[address], &payload.at(0), payload.size());
+        // This will help us catch if the CPU tries to fetch non-payload instructions
+        _memory.resize(payload.size());
     }    
 
     size_t Size() const
