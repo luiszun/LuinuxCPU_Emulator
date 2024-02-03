@@ -43,6 +43,12 @@ template <typename TAddressSpace> class Memory
         std::memcpy(&_memory[address], shellCode, size);
     }
 
+    void WritePayload(TAddressSpace address, std::vector<uint8_t> payload)
+    {
+        _ValidateAddress(address);
+        std::memcpy(&_memory[address], &payload.at(0), payload.size());
+    }    
+
     size_t Size() const
     {
         return _memory.size();

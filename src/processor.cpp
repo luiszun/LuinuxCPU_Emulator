@@ -119,7 +119,8 @@ void Processor::_DecodeInstruction()
     }
     else
     {
-        for (auto i = _instructionArgs.size() - 1; i >= 0; --i)
+        // int i because we want to know when it reaches -1 as opposed to it running amok by rollover
+        for (int i = _instructionArgs.size() - 1; i >= 0; --i)
         {
             _instructionArgs[i] = static_cast<RegisterId>(_fetchedInstruction & 0xf);
             _fetchedInstruction >>= 4;
@@ -135,11 +136,40 @@ void Processor::_ExecuteInstruction()
 {
     // Let's create a table of function pointers to the instructions. That way we only reference those by OpCodeId
     typedef void (Processor::*OpFunction)(std::vector<std::shared_ptr<Register>>);
-    static const std::unordered_map<OpCodeId, OpFunction> opCodeFunctionTable = {{OpCodeId::ADD, &Processor::ADD},
-                                                                                 {OpCodeId::SUB, &Processor::SUB},
-                                                                                 {OpCodeId::MUL, &Processor::MUL},
-                                                                                 {OpCodeId::SET, &Processor::SET}};
-
+    static const std::unordered_map<OpCodeId, OpFunction> opCodeFunctionTable = {
+        {OpCodeId::ADD, &Processor::ADD},       {OpCodeId::SUB, &Processor::SUB},
+        {OpCodeId::MUL, &Processor::MUL},       {OpCodeId::DIV, &Processor::DIV},
+        {OpCodeId::AND, &Processor::AND},       {OpCodeId::OR, &Processor::OR},
+        {OpCodeId::XOR, &Processor::XOR},       {OpCodeId::JZ, &Processor::JZ},
+        {OpCodeId::JNZ, &Processor::JNZ},       {OpCodeId::MOV, &Processor::MOV},
+        {OpCodeId::LOAD, &Processor::LOAD},     {OpCodeId::STOR, &Processor::STOR},
+        {OpCodeId::TSTB, &Processor::TSTB},     {OpCodeId::SETZ, &Processor::SETZ},
+        {OpCodeId::SETO, &Processor::SETO},     {OpCodeId::SET, &Processor::SET},
+        {OpCodeId::PUSH, &Processor::PUSH},     {OpCodeId::POP, &Processor::POP},
+        {OpCodeId::NOT, &Processor::NOT},       {OpCodeId::SHFR, &Processor::SHFR},
+        {OpCodeId::SHFL, &Processor::SHFL},     {OpCodeId::INC, &Processor::INC},
+        {OpCodeId::DEC, &Processor::DEC},       {OpCodeId::NOP, &Processor::NOP},
+        {OpCodeId::STOP, &Processor::STOP},     {OpCodeId::ADD_RM, &Processor::ADD_RM},
+        {OpCodeId::ADD_MR, &Processor::ADD_MR}, {OpCodeId::ADD_MM, &Processor::ADD_MM},
+        {OpCodeId::SUB_RM, &Processor::SUB_RM}, {OpCodeId::SUB_MR, &Processor::SUB_MR},
+        {OpCodeId::SUB_MM, &Processor::SUB_MM}, {OpCodeId::MUL_RM, &Processor::MUL_RM},
+        {OpCodeId::MUL_MR, &Processor::MUL_MR}, {OpCodeId::MUL_MM, &Processor::MUL_MM},
+        {OpCodeId::DIV_RM, &Processor::DIV_RM}, {OpCodeId::DIV_MR, &Processor::DIV_MR},
+        {OpCodeId::DIV_MM, &Processor::DIV_MM}, {OpCodeId::AND_RM, &Processor::AND_RM},
+        {OpCodeId::AND_MR, &Processor::AND_MR}, {OpCodeId::AND_MM, &Processor::AND_MM},
+        {OpCodeId::OR_RM, &Processor::OR_RM},   {OpCodeId::OR_MR, &Processor::OR_MR},
+        {OpCodeId::OR_MM, &Processor::OR_MM},   {OpCodeId::XOR_RM, &Processor::XOR_RM},
+        {OpCodeId::XOR_MR, &Processor::XOR_MR}, {OpCodeId::XOR_MM, &Processor::XOR_MM},
+        {OpCodeId::JZ_RM, &Processor::JZ_RM},   {OpCodeId::JZ_MR, &Processor::JZ_MR},
+        {OpCodeId::JZ_MM, &Processor::JZ_MM},   {OpCodeId::JNZ_RM, &Processor::JNZ_RM},
+        {OpCodeId::JNZ_MR, &Processor::JNZ_MR}, {OpCodeId::JNZ_MM, &Processor::JNZ_MM},
+        {OpCodeId::MOV_RM, &Processor::MOV_RM}, {OpCodeId::MOV_MR, &Processor::MOV_MR},
+        {OpCodeId::MOV_MM, &Processor::MOV_MM}, {OpCodeId::TSTB_M, &Processor::TSTB_M},
+        {OpCodeId::SETZ_M, &Processor::SETZ_M}, {OpCodeId::SETO_M, &Processor::SETO_M},
+        {OpCodeId::SET_M, &Processor::SET_M},   {OpCodeId::PUSH_M, &Processor::PUSH_M},
+        {OpCodeId::POP_M, &Processor::POP_M},   {OpCodeId::NOT_M, &Processor::NOT_M},
+        {OpCodeId::SHFR_M, &Processor::SHFR_M}, {OpCodeId::SHFL_M, &Processor::SHFL_M},
+        {OpCodeId::INC_M, &Processor::INC_M},   {OpCodeId::DEC_M, &Processor::DEC_M}};
     _instructionStatus = InstructionCycle::Execute;
     assert(_decodedOpCodeId != OpCodeId::INVALID_INSTR);
     std::vector<std::shared_ptr<Register>> argumentsAsRegisters;
@@ -497,9 +527,17 @@ void Processor::JNZ_MR(std::vector<std::shared_ptr<Register>> args)
 {
     _Base_JNZ(_Get_MR(args));
 }
+void Processor::JNZ_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    _Base_JNZ(_Get_MM(args));
+}
 void Processor::JZ_RM(std::vector<std::shared_ptr<Register>> args)
 {
     _Base_JZ(_Get_RM(args));
+}
+void Processor::JZ_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    _Base_JZ(_Get_MM(args));
 }
 void Processor::JNZ_RM(std::vector<std::shared_ptr<Register>> args)
 {

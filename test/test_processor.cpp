@@ -122,11 +122,9 @@ TEST(TestOpsProcessor, Test10xLoop)
                           "STOP";
 
     auto binProgram = asmObj.AssembleString(program);
-    std::string asmPayload = asmObj.GetAssembledPayloadHex();
 
     Memory16 programMemory(0x10000);
-    // * 2 means that every word has 2 bytes
-    programMemory.WritePayload(0, asmPayload.c_str(), binProgram.size() * 2);
+    programMemory.WritePayload(0, binProgram);
     TestProcessor cpu(programMemory);
     cpu.ExecuteAll();
 
