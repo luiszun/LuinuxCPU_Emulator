@@ -92,7 +92,7 @@ TEST(TestMemorySuite, TestWriteShellcode)
 {
     Memory16 mem(0xff);
 
-    const unsigned char shellCode[] = "\xde\xad\xbe\xef";
+    const char shellCode[] = "\xde\xad\xbe\xef";
     mem.WritePayload(1, shellCode, 4);
 
     ASSERT_EQ(mem.Read8(0), 0);

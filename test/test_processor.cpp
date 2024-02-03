@@ -1,12 +1,13 @@
 #include <gtest/gtest.h>
 
+#include "assembler.h"
 #include "common.h"
 #include "memory.h"
 #include "processor.h"
 
 using Memory16 = Memory<uint16_t>;
 
-unsigned char loop10xShellCode[] = "\x76\x25\x00\x10\x76\x26\x00\x01\x45\x67\x76\x25\x00\x0e";
+const char loop10xShellCode[] = "\x76\x25\x00\x10\x76\x26\x00\x01\x45\x67\x76\x25\x00\x0e";
 
 class TestProcessor : public Processor
 {
@@ -111,5 +112,24 @@ TEST(TestProcessorSuite, TestRegisterDereference)
 
 TEST(TestOpsProcessor, Test10xLoop)
 {
-    // TODO: Add some code to test this
+    Assembler asmObj;
+    std::string program = "SET R0, 10 ; This is the number of times it will loop\n"
+                          "SET R10, 0 ; Initialize R10 to be our counter\n"
+                          "goto:R2 ; loop on R2\n"
+                          "INC R10\n"
+                          "SUB R0, R10, R1\n"
+                          "JNZ R1, R2\n"
+                          "STOP";
+
+    auto binProgram = asmObj.AssembleString(program);
+    std::string asmPayload = asmObj.GetAssembledPayloadHex();
+
+    Memory16 programMemory(0x10000);
+    // * 2 means that every word has 2 bytes
+    programMemory.WritePayload(0, asmPayload.c_str(), binProgram.size() * 2);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R0).Read(), 10);
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R10).Read(), 10);
 }
