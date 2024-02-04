@@ -54,7 +54,7 @@ class TestProcessor : public Processor
         return _mainMemory;
     }
 
-    uint16_t DereferenceRegister(RegisterId reg)
+    uint16_t DereferenceRegisterRead(RegisterId reg)
     {
         return _DereferenceRegisterRead(reg);
     }
@@ -106,11 +106,74 @@ TEST(TestProcessorSuite, TestRegisterDereference)
     cpu.GetMainMemory().Write8(0xdead, 0xbe);
     cpu.GetMainMemory().Write8(0xdead + 1, 0xef);
 
-    uint16_t derefVal = cpu.DereferenceRegister(RegisterId::RAC);
+    uint16_t derefVal = cpu.DereferenceRegisterRead(RegisterId::RAC);
     ASSERT_EQ(derefVal, 0xbeef);
 }
 
-TEST(TestOpsProcessor, Test10xLoop)
+/*
+Instructions that need testing:
+ADD
+MUL
+DIV
+AND
+OR
+XOR
+JZ
+MOV
+LOAD
+STOR
+TSTB
+SETZ
+SETO
+PUSH
+POP
+NOT
+SHFR
+SHFL
+DEC
+NOP
+ADD_RM
+ADD_MR
+ADD_MM
+SUB_RM
+SUB_MR
+SUB_MM
+MUL_RM
+MUL_MR
+MUL_MM
+DIV_RM
+DIV_MR
+DIV_MM
+AND_RM
+AND_MR
+AND_MM
+OR_RM
+OR_MR
+OR_MM
+XOR_RM
+XOR_MR
+XOR_MM
+JZ_RM
+JZ_MR
+JZ_MM
+JNZ_RM
+JNZ_MR
+JNZ_MM
+MOV_RM
+MOV_MR
+MOV_MM
+TSTB_M
+SETZ_M
+SETO_M
+SET_M
+PUSH_M
+POP_M
+NOT_M
+SHFR_M
+SHFL_M
+DEC_M
+*/
+TEST(TestProcessorPrograms, Test10xLoop)
 {
     Assembler asmObj;
     std::string program = "SET R0, 10 ; This is the number of times it will loop\n"
@@ -130,4 +193,27 @@ TEST(TestOpsProcessor, Test10xLoop)
 
     ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R0).Read(), 10);
     ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R10).Read(), 10);
+}
+
+TEST(TestProcessorPrograms, Test10xLoop_RM)
+{
+    Assembler asmObj;
+    std::string program = "SET R0, 10 ; This is the number of times it will loop\n"
+                          "SET R10, h'100 ; 0x100 will contain the counter. R10 is the ptr\n"
+                          "goto:R2 ; loop on R2\n"
+                          "INC_M R10\n"
+                          "SUB_RM R0, R10\n"
+                          "JNZ RAC, R2\n"
+                          "STOP";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R0).Read(), 10);
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R10).Read(), 0x100);
+    ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R10), 10);
 }
