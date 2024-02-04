@@ -26,8 +26,11 @@ void Processor::_DoPerformExecutionCycle()
     _DecodeInstruction();
     _ExecuteInstruction();
 
-    // Instruction cycle is done at this point
-    _instructionStatus = InstructionCycle::Idle;
+    // Instruction cycle is done at this point, break only on halted state
+    if (_instructionStatus != InstructionCycle::Halted)
+    {
+        _instructionStatus = InstructionCycle::Idle;
+    }
 }
 
 Processor::Processor(Memory16 &programMemory)
@@ -169,6 +172,9 @@ void Processor::_ExecuteInstruction()
     }
 
     assert(opCodeFunctionTable.count(_decodedOpCodeId) > 0);
+    OpFunction fPtr = opCodeFunctionTable.at(_decodedOpCodeId);
+
+    (*this.*fPtr)(argumentsAsRegisters);
 
     _CleanInstructionCycle();
 }
@@ -236,7 +242,7 @@ void Processor::_Base_JZ(ConstantPair values)
 }
 void Processor::_Base_JNZ(ConstantPair values)
 {
-    if (0xffff == values.first)
+    if (0x0 != values.first)
     {
         WriteRegister(RegisterId::RIP, values.second);
     }
