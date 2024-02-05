@@ -217,3 +217,30 @@ TEST(TestProcessorPrograms, Test10xLoop_RM)
     ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R10).Read(), 0x100);
     ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R10), 10);
 }
+
+TEST(TestProcessorPrograms, TestAluOps)
+{
+    Assembler asmObj;
+    // 2 + 3
+    // 5 * 3
+    // 15 - 6
+    // 9 / 3
+    std::string program = "SET R0, 2\n"
+                          "SET R1, 3\n"
+                          "SET R2, 5\n"
+                          "SET R3, 6\n"
+                          "ADD R0, R1, R10 ; 2+3\n"
+                          "MUL R10, R1, R10 ; 5*3\n"
+                          "SUB R10, R3, R10 ; 15-6\n"
+                          "DIV R10, R1, R10 ; 9/3\n"
+                          "STOP";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R10).Read(), 3);
+}

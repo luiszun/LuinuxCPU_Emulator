@@ -80,14 +80,23 @@ void Processor::_DecodeInstruction()
     {
         throw std::runtime_error("Decoding new instruction with previous exec cycle unfinished.");
     }
-    // Need to check a map, opcode 4b, 8b, 12b, 16b
-    for (auto i = 0; i < 4; ++i)
+
+    // We check this case for leading zeroes, the rest of instructions can be determined below.`
+    if ((_fetchedInstruction & 0xf000) == 0)
     {
-        uint16_t opCodeValue = _fetchedInstruction >> (4 * i);
-        if (opCodeValuesTable.count(opCodeValue) > 0)
+        _decodedOpCodeId = OpCodeId::ADD;
+    }
+    else
+    {
+        // Need to check a map, opcode 4b, 8b, 12b, 16b
+        for (auto i = 0; i < 4; ++i)
         {
-            _decodedOpCodeId = opCodeValuesTable.at(opCodeValue);
-            break;
+            uint16_t opCodeValue = _fetchedInstruction >> (4 * i);
+            if (opCodeValuesTable.count(opCodeValue) > 0)
+            {
+                _decodedOpCodeId = opCodeValuesTable.at(opCodeValue);
+                break;
+            }
         }
     }
 
