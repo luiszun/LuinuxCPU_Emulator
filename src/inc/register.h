@@ -28,13 +28,13 @@ enum class RegisterId : uint8_t
 
 enum class FlagsRegister
 {
-    Zero = 0,
-    Carry,
-    Negative,
-    Trap,
-    Reserved,
-    StackOverflow,
-    Exception
+    Zero = 0x0001,
+    Carry = 0x0002,
+    Negative = 0x0004,
+    Trap = 0x0008,
+    Reserved = 0x0010,
+    StackOverflow = 0x0020,
+    Exception = 0x0040
 };
 
 extern const std::unordered_map<std::string, RegisterId> registerMap;
@@ -42,7 +42,8 @@ extern const std::unordered_map<std::string, RegisterId> registerMap;
 class Register
 {
   public:
-    Register(uint16_t address, Memory8 &memory, RegisterId inRegisterId) : _address(address), _memory(memory), registerId(inRegisterId)
+    Register(uint16_t address, Memory8 &memory, RegisterId inRegisterId)
+        : _address(address), _memory(memory), registerId(inRegisterId)
     {
     }
 

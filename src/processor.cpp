@@ -452,10 +452,14 @@ void Processor::TSTB(std::vector<std::shared_ptr<Register>> args)
     auto opA = args.at(0)->Read();
     auto opB = args.at(1)->Read();
     bool isBitOn = opB & (1 << opA);
+    uint16_t currentFlags = _registers.at(RegisterId::RFL).Read();
     if (isBitOn)
     {
-        uint16_t currentFlags = _registers.at(RegisterId::RFL).Read();
-        _registers.at(RegisterId::RFL).Write(currentFlags | GetRegisterFlagMask(FlagsRegister::Zero));
+        _registers.at(RegisterId::RFL).Write(currentFlags | static_cast<uint16_t>(FlagsRegister::Zero));
+    }
+    else
+    {
+        _registers.at(RegisterId::RFL).Write(currentFlags & ~static_cast<uint16_t>(FlagsRegister::Zero));
     }
 }
 void Processor::SETZ(std::vector<std::shared_ptr<Register>> args)
@@ -567,10 +571,14 @@ void Processor::TSTB_M(std::vector<std::shared_ptr<Register>> args)
     auto opA = args.at(0)->Read();
     auto opB = _DereferenceRegisterRead(args.at(1)->registerId);
     bool isBitOn = opB & (1 << opA);
+    uint16_t currentFlags = _registers.at(RegisterId::RFL).Read();
     if (isBitOn)
     {
-        uint16_t currentFlags = _registers.at(RegisterId::RFL).Read();
-        _registers.at(RegisterId::RFL).Write(currentFlags | GetRegisterFlagMask(FlagsRegister::Zero));
+        _registers.at(RegisterId::RFL).Write(currentFlags | static_cast<uint16_t>(FlagsRegister::Zero));
+    }
+    else
+    {
+        _registers.at(RegisterId::RFL).Write(currentFlags & ~static_cast<uint16_t>(FlagsRegister::Zero));
     }
 }
 void Processor::SETZ_M(std::vector<std::shared_ptr<Register>> args)

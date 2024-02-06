@@ -53,10 +53,6 @@ class Processor
     void _CleanInstructionCycle();
     uint16_t _DereferenceRegisterRead(RegisterId reg) const;
     void _DereferenceRegisterWrite(RegisterId reg, uint16_t value);
-    inline uint16_t GetRegisterFlagMask(FlagsRegister flag) const
-    {
-        return (1 << static_cast<uint16_t>(FlagsRegister::Zero));
-    }
 
     // All the instructions!
 

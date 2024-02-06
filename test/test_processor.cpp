@@ -112,38 +112,26 @@ TEST(TestProcessorSuite, TestRegisterDereference)
 
 /*
 Instructions that need testing:
-ADD
-MUL
-DIV
 AND
 OR
 XOR
+TSTB
+SHFR
+SHFL
+
+TSTB_M
+SHFR_M
+SHFL_M
+
 JZ
 MOV
 LOAD
 STOR
-TSTB
 SETZ
-SETO
 PUSH
 POP
 NOT
-SHFR
-SHFL
-DEC
 NOP
-ADD_RM
-ADD_MR
-ADD_MM
-SUB_RM
-SUB_MR
-SUB_MM
-MUL_RM
-MUL_MR
-MUL_MM
-DIV_RM
-DIV_MR
-DIV_MM
 AND_RM
 AND_MR
 AND_MM
@@ -154,24 +142,18 @@ XOR_RM
 XOR_MR
 XOR_MM
 JZ_RM
-JZ_MR
 JZ_MM
 JNZ_RM
 JNZ_MR
 JNZ_MM
-MOV_RM
-MOV_MR
 MOV_MM
-TSTB_M
+MOV_MR
 SETZ_M
 SETO_M
-SET_M
 PUSH_M
 POP_M
 NOT_M
-SHFR_M
-SHFL_M
-DEC_M
+
 */
 TEST(TestProcessorPrograms, Test10xLoop)
 {
@@ -218,6 +200,50 @@ TEST(TestProcessorPrograms, Test10xLoop_RM)
     ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R10), 10);
 }
 
+TEST(TestProcessorPrograms, Test10xLoopDec)
+{
+    Assembler asmObj;
+    std::string program = "SET R0, 10 ; This is the number of times it will loop\n"
+                          "SET R1, 0; This will act as our counter to test\n"
+                          "goto:R2 ; loop on R2\n"
+                          "DEC R0\n"
+                          "INC R1\n"
+                          "JNZ R0, R2\n"
+                          "STOP";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R1).Read(), 10);
+}
+
+TEST(TestProcessorPrograms, Test10xLoopDec_M)
+{
+    Assembler asmObj;
+    std::string program = "SET R0, h'200\n"
+                          "SET_M R0 10\n"
+                          "SET R1, 0; This will act as our counter to test\n"
+                          "goto:R2 ; loop on R2\n"
+                          "DEC_M R0\n"
+                          "INC R1\n"
+                          "JNZ_MR R0, R2\n"
+                          "MOV R1, R1\n"
+                          "STOP";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R1).Read(), 10);
+}
+
 TEST(TestProcessorPrograms, TestAluOps)
 {
     Assembler asmObj;
@@ -243,4 +269,137 @@ TEST(TestProcessorPrograms, TestAluOps)
     cpu.ExecuteAll();
 
     ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R10).Read(), 3);
+}
+
+TEST(TestProcessorPrograms, TestAluOps_MM)
+{
+    Assembler asmObj;
+    // 2 + 3
+    // 5 * 3
+    // 15 - 6
+    // 9 / 3
+    std::string program = "SET R0, 0; *R0 = 2\n"
+                          "SET_M R0, 2\n"
+                          "SET R1, 2; *R1 = 3\n"
+                          "SET_M R1, 3\n"
+                          "SET R2, 4; *R2 = 5\n"
+                          "SET_M R2, 5\n"
+                          "SET R3, 6; *R3 = 6\n"
+                          "SET_M R3, 6\n"
+                          "SET R10, h'100; *R10 contains partial results\n"
+                          "ADD_MM R0, R1; 2+3\n"
+                          "MOV_RM RAC, R10\n"
+                          "MUL_MM R10, R1; 5*3\n"
+                          "MOV_RM RAC, R10\n"
+                          "SUB_MM R10, R3; 15-6\n"
+                          "MOV_RM RAC, R10\n"
+                          "DIV_MM R10, R1; 9/3\n"
+                          "STOP";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::RAC).Read(), 3);
+}
+
+TEST(TestProcessorPrograms, TestAluOps_MR)
+{
+    Assembler asmObj;
+    // 2 + 3
+    // 5 * 3
+    // 15 - 6
+    // 9 / 3
+    std::string program = "SET R0, h'100\n"
+                          "SET_M R0, 2\n"
+                          "SET R1, 3\n"
+                          "SET R2, 5\n"
+                          "SET R3, 6\n"
+                          "ADD_MR R0, R1; 2+3\n"
+                          "MOV_RM RAC, R10\n"
+                          "MUL_MR R10, R1; 5*3\n"
+                          "MOV_RM RAC, R10\n"
+                          "SUB_MR R10, R3; 15-6\n"
+                          "MOV_RM RAC, R10\n"
+                          "DIV_MR R10, R1; 9/3\n"
+                          "STOP";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::RAC).Read(), 3);
+}
+
+TEST(TestProcessorPrograms, TestAluOps_RM)
+{
+    Assembler asmObj;
+    // 2 + 3
+    // 5 * 3
+    // 15 - 6
+    // 9 / 3
+    std::string program = "SET R0, 2\n"
+                          "SET R7, h'100 ; this ptr will hold our right operands\n"
+                          "SET_M R7, 3\n"
+                          "ADD_RM R0, R7; 2+3\n"
+                          "MUL_RM RAC, R7; 5*3\n"
+                          "SET_M R7, 6\n"
+                          "SUB_RM RAC, R7; 15-6\n"
+                          "SET_M R7, 3\n"
+                          "DIV_RM RAC, R7; 9/3\n"
+                          "STOP";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::RAC).Read(), 3);
+}
+
+TEST(TestProcessorPrograms, TestBitOps)
+{
+    Assembler asmObj;
+    /*
+AND
+OR
+XOR
+TSTB
+SHFR
+SHFL
+*/
+    std::string program = "SET R0, 1\n"
+                          "SETO R1 ; h'ffff\n"
+                          "SHFL R0 ; h'2\n"
+                          "SHFR R1 ; h'7fff\n"
+                          "XOR R0, R1, R1 ; h'7ffd\n"
+                          "SET R2 h'8000\n"
+                          "OR R2, R0, R0 ; h'8002\n"
+                          "SET R3 h'7fff\n"
+                          "AND R3, R0, R4 ; h'2\n"
+                          "NOT R4 ; h'fffd\n"
+                          "SET R5 0\n"
+                          "TSTB R5, R4 ; FLR:Zero got 1\n"
+                          "STOP\n";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R0).Read(), 0x8002);
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R1).Read(), 0x7ffd);
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R2).Read(), 0x8000);
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R4).Read(), 0xfffd);
+    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::RFL).Read() & static_cast<uint16_t>(FlagsRegister::Zero), 1);
 }
