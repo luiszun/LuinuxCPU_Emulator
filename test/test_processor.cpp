@@ -368,14 +368,6 @@ TEST(TestProcessorPrograms, TestAluOps_RM)
 TEST(TestProcessorPrograms, TestBitOps)
 {
     Assembler asmObj;
-    /*
-AND
-OR
-XOR
-TSTB
-SHFR
-SHFL
-*/
     std::string program = "SET R0, 1\n"
                           "SETO R1 ; h'ffff\n"
                           "SHFL R0 ; h'2\n"

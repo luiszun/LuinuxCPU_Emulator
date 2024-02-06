@@ -31,7 +31,7 @@ enum class FlagsRegister
     Zero = 0x0001,
     Carry = 0x0002,
     Negative = 0x0004,
-    Trap = 0x0008,
+    SingleStep = 0x0008,
     Reserved = 0x0010,
     StackOverflow = 0x0020,
     Exception = 0x0040
