@@ -88,8 +88,6 @@ class Processor
     void JZ(std::vector<std::shared_ptr<Register>> args);
     void JNZ(std::vector<std::shared_ptr<Register>> args);
     void MOV(std::vector<std::shared_ptr<Register>> args);
-    void LOAD(std::vector<std::shared_ptr<Register>> args);
-    void STOR(std::vector<std::shared_ptr<Register>> args);
     void TSTB(std::vector<std::shared_ptr<Register>> args);
     void SETZ(std::vector<std::shared_ptr<Register>> args);
     void SETO(std::vector<std::shared_ptr<Register>> args);

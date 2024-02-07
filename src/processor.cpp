@@ -142,7 +142,6 @@ void Processor::_ExecuteInstruction()
         {OpCodeId::AND, &Processor::AND},       {OpCodeId::OR, &Processor::OR},
         {OpCodeId::XOR, &Processor::XOR},       {OpCodeId::JZ, &Processor::JZ},
         {OpCodeId::JNZ, &Processor::JNZ},       {OpCodeId::MOV, &Processor::MOV},
-        {OpCodeId::LOAD, &Processor::LOAD},     {OpCodeId::STOR, &Processor::STOR},
         {OpCodeId::TSTB, &Processor::TSTB},     {OpCodeId::SETZ, &Processor::SETZ},
         {OpCodeId::SETO, &Processor::SETO},     {OpCodeId::SET, &Processor::SET},
         {OpCodeId::PUSH, &Processor::PUSH},     {OpCodeId::POP, &Processor::POP},
@@ -229,6 +228,12 @@ void Processor::_Base_MUL(ConstantPair values, std::shared_ptr<Register> dest)
 }
 void Processor::_Base_DIV(ConstantPair values, std::shared_ptr<Register> dest)
 {
+    if(values.second == 0){
+        FlagsObject f(ReadRegister(RegisterId::RFL));
+        f.flags.Exception = 1;
+        WriteRegister(RegisterId::RFL, f.value);
+        return;
+    }
     dest->Write(values.first / values.second);
 }
 void Processor::_Base_AND(ConstantPair values, std::shared_ptr<Register> dest)
@@ -434,19 +439,6 @@ void Processor::MOV(std::vector<std::shared_ptr<Register>> args)
     auto opA = args.at(0)->Read();
     auto opB = args.at(1);
     opB->Write(opA);
-}
-void Processor::LOAD(std::vector<std::shared_ptr<Register>> args)
-{
-    auto opA = args.at(0);
-    auto opB = args.at(1);
-
-    uint16_t valueAtAddress = _DereferenceRegisterRead(opA->registerId);
-    opB->Write(valueAtAddress);
-}
-void Processor::STOR(std::vector<std::shared_ptr<Register>> args)
-{
-    auto opA = args.at(0);
-    auto opB = args.at(1);
 }
 void Processor::TSTB(std::vector<std::shared_ptr<Register>> args)
 {

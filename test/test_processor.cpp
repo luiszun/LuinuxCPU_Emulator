@@ -377,6 +377,8 @@ TEST(TestProcessorPrograms, TestBitOps_Indirect)
                           "XOR_MM R0, R1\n"
                           "MOV RAC, R9 ; R9 = 0xffff\n"
                           "AND_MM R0, R1 ; RAC = 0\n"
+                          "TRAP ; TEST VAL\n"
+                          "NOT R10\n"
                           "STOP\n";
 
     auto binProgram = asmObj.AssembleString(program);
@@ -403,33 +405,93 @@ TEST(TestProcessorPrograms, TestBitOps_Indirect)
     ASSERT_EQ(f.flags.Zero, 1);
     ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 0xaaaa);
     cpu.WriteRegister(RegisterId::RFL, 0);
-    cpu.ExecuteAll();    
+    cpu.ExecuteAll();
 
     // TRAP 4
     ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 0);
     ASSERT_EQ(cpu.ReadRegister(RegisterId::R10), 0x5555);
     ASSERT_EQ(cpu.ReadRegister(RegisterId::R9), 0xffff);
+
+    // TRAP 5
+    cpu.WriteRegister(RegisterId::RFL, 0);
+    cpu.ExecuteAll();
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R10), 0xaaaa);
 }
 
 /*
 Instructions that need testing:
-
-
-JZ
-SETZ
-PUSH
-POP
-NOT
-NOP
 JZ_RM
 JZ_MM
 JNZ_RM
 JNZ_MM
-MOV_MM
-MOV_MR
-SETZ_M
-SETO_M
 PUSH_M
 POP_M
 NOT_M
 */
+
+TEST(TestProcessorPrograms, TestBranching)
+{
+    Assembler asmObj;
+    std::string program = "SET R1, 2\n"
+                          "SET R3, 6\n"
+                          "SET R4, 15\n"
+                          "SET R5, 5\n"
+                          "SET R6, 2\n"
+                          "goto:R7\n"
+                          "INC R2 ; counter\n"
+                          "MUL R3, R5, R3\n"
+                          "MUL R4, R6, R4\n"
+                          "SUB R4, R3, RAC\n"
+                          "JZ RAC, R7\n"
+                          "SET R0, h'dead ; This doesn't matter, it'll be zero'd\n"
+                          "SETZ R0\n"
+                          "NOP\n"
+                          "TRAP ; TEST VAL\n"
+                          "SETO_M R0\n"
+                          "TRAP ; TEST VAL\n"
+                          "SETZ_M R0\n"
+                          "TRAP ; TEST VAL\n"
+                          ";---------------\n"
+                          "SET_M R0, h'dead\n"
+                          "SET R1, h'2\n"
+                          "MOV_MM R0, R1\n"
+                          "MOV_MR R0, R2\n"
+                          "PUSH R2\n"
+                          "POP R3\n"
+                          "PUSH_M R0\n"
+                          "SET R10, h'100\n"
+                          "POP_M R10\n"
+                          "TRAP ; TEST VAL\n"
+                          "STOP\n";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    // TRAP 1
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R2), 2);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R0), 0);
+    cpu.WriteRegister(RegisterId::RFL, 0);
+    cpu.ExecuteAll();
+
+    // TRAP 2
+    ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R0), 0xffff);
+    cpu.WriteRegister(RegisterId::RFL, 0);
+    cpu.ExecuteAll();
+
+    // TRAP 3
+    ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R0), 0x0);
+    cpu.WriteRegister(RegisterId::RFL, 0);
+    cpu.ExecuteAll();
+
+    // TRAP 4
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R2), 0xdead);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R3), 0xdead);
+    ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R1), 0xdead);
+    ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R10), 0xdead);
+    cpu.WriteRegister(RegisterId::RFL, 0);
+    cpu.ExecuteAll();    
+}
