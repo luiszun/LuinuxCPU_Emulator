@@ -371,6 +371,7 @@ TEST(TestProcessorPrograms, TestBitOps)
     std::string program = "SET R0, 1\n"
                           "SETO R1 ; h'ffff\n"
                           "SHFL R0 ; h'2\n"
+                          "TRAP\n"
                           "SHFR R1 ; h'7fff\n"
                           "XOR R0, R1, R1 ; h'7ffd\n"
                           "SET R2 h'8000\n"

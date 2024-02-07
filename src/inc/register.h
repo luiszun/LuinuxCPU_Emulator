@@ -26,12 +26,12 @@ enum class RegisterId : uint8_t
     END_OF_REGLIST
 };
 
-enum class FlagsRegister
+enum class FlagsRegister : uint16_t
 {
     Zero = 0x0001,
     Carry = 0x0002,
     Negative = 0x0004,
-    SingleStep = 0x0008,
+    Trap = 0x0008,
     Reserved = 0x0010,
     StackOverflow = 0x0020,
     Exception = 0x0040
@@ -63,4 +63,22 @@ class Register
   protected:
     uint8_t _address;
     Memory8 &_memory;
+};
+
+struct FlagsUnion
+{
+    unsigned Zero : 1;
+    unsigned Carry : 1;
+    unsigned Negative : 1;
+    unsigned Trap : 1;
+    unsigned Reserved : 1;
+    unsigned StackOverflow : 1;
+    unsigned Exception : 1;
+};
+
+union FlagsObject {
+    FlagsUnion flags;
+    uint16_t value;
+
+    FlagsObject(uint16_t v) : value(v){}
 };

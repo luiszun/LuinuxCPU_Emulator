@@ -169,7 +169,8 @@ void Processor::_ExecuteInstruction()
         {OpCodeId::SET_M, &Processor::SET_M},   {OpCodeId::PUSH_M, &Processor::PUSH_M},
         {OpCodeId::POP_M, &Processor::POP_M},   {OpCodeId::NOT_M, &Processor::NOT_M},
         {OpCodeId::SHFR_M, &Processor::SHFR_M}, {OpCodeId::SHFL_M, &Processor::SHFL_M},
-        {OpCodeId::INC_M, &Processor::INC_M},   {OpCodeId::DEC_M, &Processor::DEC_M}};
+        {OpCodeId::INC_M, &Processor::INC_M},   {OpCodeId::DEC_M, &Processor::DEC_M},
+        {OpCodeId::TRAP, &Processor::TRAP}};
     _instructionStatus = InstructionCycle::Execute;
     assert(_decodedOpCodeId != OpCodeId::INVALID_INSTR);
     std::vector<std::shared_ptr<Register>> argumentsAsRegisters;
@@ -452,15 +453,9 @@ void Processor::TSTB(std::vector<std::shared_ptr<Register>> args)
     auto opA = args.at(0)->Read();
     auto opB = args.at(1)->Read();
     bool isBitOn = opB & (1 << opA);
-    uint16_t currentFlags = _registers.at(RegisterId::RFL).Read();
-    if (isBitOn)
-    {
-        _registers.at(RegisterId::RFL).Write(currentFlags | static_cast<uint16_t>(FlagsRegister::Zero));
-    }
-    else
-    {
-        _registers.at(RegisterId::RFL).Write(currentFlags & ~static_cast<uint16_t>(FlagsRegister::Zero));
-    }
+    FlagsObject f(ReadRegister(RegisterId::RFL));
+    f.flags.Zero = (isBitOn) ? 1 : 0;
+    WriteRegister(RegisterId::RFL, f.value);
 }
 void Processor::SETZ(std::vector<std::shared_ptr<Register>> args)
 {
@@ -571,15 +566,9 @@ void Processor::TSTB_M(std::vector<std::shared_ptr<Register>> args)
     auto opA = args.at(0)->Read();
     auto opB = _DereferenceRegisterRead(args.at(1)->registerId);
     bool isBitOn = opB & (1 << opA);
-    uint16_t currentFlags = _registers.at(RegisterId::RFL).Read();
-    if (isBitOn)
-    {
-        _registers.at(RegisterId::RFL).Write(currentFlags | static_cast<uint16_t>(FlagsRegister::Zero));
-    }
-    else
-    {
-        _registers.at(RegisterId::RFL).Write(currentFlags & ~static_cast<uint16_t>(FlagsRegister::Zero));
-    }
+    FlagsObject f(ReadRegister(RegisterId::RFL));
+    f.flags.Zero = (isBitOn) ? 1 : 0;
+    WriteRegister(RegisterId::RFL, f.value);
 }
 void Processor::SETZ_M(std::vector<std::shared_ptr<Register>> args)
 {
@@ -633,4 +622,10 @@ void Processor::DEC_M(std::vector<std::shared_ptr<Register>> args)
 {
     auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
     _DereferenceRegisterWrite(args.at(0)->registerId, derefA - 1);
+}
+void Processor::TRAP(std::vector<std::shared_ptr<Register>> args)
+{
+    FlagsObject f(ReadRegister(RegisterId::RFL));
+    f.flags.Trap = 1;
+    WriteRegister(RegisterId::RFL, f.value);
 }

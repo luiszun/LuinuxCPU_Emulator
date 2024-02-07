@@ -33,8 +33,14 @@ class Processor
     void PerformExecutionCycle();
     void ExecuteAll()
     {
+
         while (_instructionStatus != InstructionCycle::Halted)
         {
+            FlagsObject f(ReadRegister(RegisterId::RFL));
+            if (f.flags.Trap == 1)
+            {
+                break;
+            }
             _DoPerformExecutionCycle();
         }
     }
@@ -136,6 +142,7 @@ class Processor
     void SHFL_M(std::vector<std::shared_ptr<Register>> args);
     void INC_M(std::vector<std::shared_ptr<Register>> args);
     void DEC_M(std::vector<std::shared_ptr<Register>> args);
+    void TRAP(std::vector<std::shared_ptr<Register>> args);
 
     Memory16 &_programMemory;
     Memory16 _mainMemory;

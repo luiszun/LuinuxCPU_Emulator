@@ -69,6 +69,7 @@ enum class OpCodeId
     SHFL_M,
     INC_M,
     DEC_M,
+    TRAP,
     INVALID_INSTR
 };
 
