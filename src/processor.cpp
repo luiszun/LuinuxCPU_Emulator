@@ -431,9 +431,9 @@ void Processor::JNZ(std::vector<std::shared_ptr<Register>> args)
 }
 void Processor::MOV(std::vector<std::shared_ptr<Register>> args)
 {
-    auto opA = args.at(0);
+    auto opA = args.at(0)->Read();
     auto opB = args.at(1);
-    opB->Write(opA->Read());
+    opB->Write(opA);
 }
 void Processor::LOAD(std::vector<std::shared_ptr<Register>> args)
 {

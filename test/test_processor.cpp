@@ -110,51 +110,6 @@ TEST(TestProcessorSuite, TestRegisterDereference)
     ASSERT_EQ(derefVal, 0xbeef);
 }
 
-/*
-Instructions that need testing:
-AND
-OR
-XOR
-TSTB
-SHFR
-SHFL
-
-TSTB_M
-SHFR_M
-SHFL_M
-
-JZ
-MOV
-LOAD
-STOR
-SETZ
-PUSH
-POP
-NOT
-NOP
-AND_RM
-AND_MR
-AND_MM
-OR_RM
-OR_MR
-OR_MM
-XOR_RM
-XOR_MR
-XOR_MM
-JZ_RM
-JZ_MM
-JNZ_RM
-JNZ_MR
-JNZ_MM
-MOV_MM
-MOV_MR
-SETZ_M
-SETO_M
-PUSH_M
-POP_M
-NOT_M
-
-*/
 TEST(TestProcessorPrograms, Test10xLoop)
 {
     Assembler asmObj;
@@ -173,8 +128,8 @@ TEST(TestProcessorPrograms, Test10xLoop)
     TestProcessor cpu(programMemory);
     cpu.ExecuteAll();
 
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R0).Read(), 10);
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R10).Read(), 10);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R0), 10);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R10), 10);
 }
 
 TEST(TestProcessorPrograms, Test10xLoop_RM)
@@ -195,8 +150,8 @@ TEST(TestProcessorPrograms, Test10xLoop_RM)
     TestProcessor cpu(programMemory);
     cpu.ExecuteAll();
 
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R0).Read(), 10);
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R10).Read(), 0x100);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R0), 10);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R10), 0x100);
     ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R10), 10);
 }
 
@@ -218,7 +173,7 @@ TEST(TestProcessorPrograms, Test10xLoopDec)
     TestProcessor cpu(programMemory);
     cpu.ExecuteAll();
 
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R1).Read(), 10);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R1), 10);
 }
 
 TEST(TestProcessorPrograms, Test10xLoopDec_M)
@@ -241,7 +196,7 @@ TEST(TestProcessorPrograms, Test10xLoopDec_M)
     TestProcessor cpu(programMemory);
     cpu.ExecuteAll();
 
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R1).Read(), 10);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R1), 10);
 }
 
 TEST(TestProcessorPrograms, TestAluOps)
@@ -268,7 +223,7 @@ TEST(TestProcessorPrograms, TestAluOps)
     TestProcessor cpu(programMemory);
     cpu.ExecuteAll();
 
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R10).Read(), 3);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R10), 3);
 }
 
 TEST(TestProcessorPrograms, TestAluOps_MM)
@@ -303,7 +258,7 @@ TEST(TestProcessorPrograms, TestAluOps_MM)
     TestProcessor cpu(programMemory);
     cpu.ExecuteAll();
 
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::RAC).Read(), 3);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 3);
 }
 
 TEST(TestProcessorPrograms, TestAluOps_MR)
@@ -334,7 +289,7 @@ TEST(TestProcessorPrograms, TestAluOps_MR)
     TestProcessor cpu(programMemory);
     cpu.ExecuteAll();
 
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::RAC).Read(), 3);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 3);
 }
 
 TEST(TestProcessorPrograms, TestAluOps_RM)
@@ -362,7 +317,7 @@ TEST(TestProcessorPrograms, TestAluOps_RM)
     TestProcessor cpu(programMemory);
     cpu.ExecuteAll();
 
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::RAC).Read(), 3);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 3);
 }
 
 TEST(TestProcessorPrograms, TestBitOps)
@@ -371,7 +326,6 @@ TEST(TestProcessorPrograms, TestBitOps)
     std::string program = "SET R0, 1\n"
                           "SETO R1 ; h'ffff\n"
                           "SHFL R0 ; h'2\n"
-                          "TRAP\n"
                           "SHFR R1 ; h'7fff\n"
                           "XOR R0, R1, R1 ; h'7ffd\n"
                           "SET R2 h'8000\n"
@@ -390,9 +344,96 @@ TEST(TestProcessorPrograms, TestBitOps)
     TestProcessor cpu(programMemory);
     cpu.ExecuteAll();
 
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R0).Read(), 0x8002);
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R1).Read(), 0x7ffd);
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R2).Read(), 0x8000);
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::R4).Read(), 0xfffd);
-    ASSERT_EQ(cpu.GetRegisters().at(RegisterId::RFL).Read() & static_cast<uint16_t>(FlagsRegister::Zero), 1);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R0), 0x8002);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R1), 0x7ffd);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R2), 0x8000);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R4), 0xfffd);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::RFL) & static_cast<uint16_t>(FlagsRegister::Zero), 1);
 }
+
+TEST(TestProcessorPrograms, TestBitOps_Indirect)
+{
+    Assembler asmObj;
+    std::string program = "SET R0, 0\n"
+                          "SET R1, 2\n"
+                          "SET_M R0 h'aaaa\n"
+                          "SET_M R1 h'5555\n"
+                          "OR_MM R0 R1 ; RAC == 0xffff\n"
+                          "XOR_RM RAC R0 ; RAC == h'5555\n"
+                          "TRAP ; TEST VAL\n"
+                          "OR_RM RAC R0 ; RAC == 0xffff\n"
+                          "SHFR_M R0 ; R0==0x5555\n"
+                          "SHFL_M R1 ; R1==0xaaaa\n"
+                          "TRAP ; TEST VAL\n"
+                          "TSTB_M R0, R0 ; RFL Zero=1\n"
+                          "XOR_MR R0, RAC ; ffff^5555 RAC == 0xaaaa\n"
+                          "OR_RM RAC, R0 ; RAC=0xffff \n"
+                          "AND_RM RAC, R1; RAC==0xaaaa \n"
+                          "TRAP ; TEST VAL\n"
+                          "; RAC=aaaa R0=5555 R1=aaaa\n"
+                          "AND_MR R0, RAC ; 0x5555 & 0xaaaa -> RAC:0\n"
+                          "OR_MR R0, RAC ; 5555 | 0 -> RAC:0x5555\n"
+                          "MOV RAC, R10 ; R10 = 0x5555\n"
+                          "XOR_MM R0, R1\n"
+                          "MOV RAC, R9 ; R9 = 0xffff\n"
+                          "AND_MM R0, R1 ; RAC = 0\n"
+                          "STOP\n";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    // TRAP 1
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 0x5555);
+    cpu.WriteRegister(RegisterId::RFL, 0);
+    cpu.ExecuteAll();
+
+    // TRAP 2
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 0xffff);
+    ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R0), 0x5555);
+    ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R1), 0xaaaa);
+    cpu.WriteRegister(RegisterId::RFL, 0);
+    cpu.ExecuteAll();
+
+    // TRAP 3
+    FlagsObject f(cpu.ReadRegister(RegisterId::RFL));
+    ASSERT_EQ(f.flags.Zero, 1);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 0xaaaa);
+    cpu.WriteRegister(RegisterId::RFL, 0);
+    cpu.ExecuteAll();    
+
+    // TRAP 4
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 0);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R10), 0x5555);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R9), 0xffff);
+}
+
+/*
+Instructions that need testing:
+
+
+JZ
+MOV
+LOAD
+STOR
+SETZ
+PUSH
+POP
+NOT
+NOP
+JZ_RM
+JZ_MM
+JNZ_RM
+JNZ_MM
+MOV_MM
+MOV_MR
+SETZ_M
+SETO_M
+PUSH_M
+POP_M
+NOT_M
+
+*/
