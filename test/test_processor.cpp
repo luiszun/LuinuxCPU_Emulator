@@ -416,9 +416,6 @@ Instructions that need testing:
 
 
 JZ
-MOV
-LOAD
-STOR
 SETZ
 PUSH
 POP
@@ -435,5 +432,4 @@ SETO_M
 PUSH_M
 POP_M
 NOT_M
-
 */
