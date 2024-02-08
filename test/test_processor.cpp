@@ -418,18 +418,7 @@ TEST(TestProcessorPrograms, TestBitOps_Indirect)
     ASSERT_EQ(cpu.ReadRegister(RegisterId::R10), 0xaaaa);
 }
 
-/*
-Instructions that need testing:
-JZ_RM
-JZ_MM
-JNZ_RM
-JNZ_MM
-PUSH_M
-POP_M
-NOT_M
-*/
-
-TEST(TestProcessorPrograms, TestBranching)
+TEST(TestProcessorPrograms, TestBranchingAndStack)
 {
     Assembler asmObj;
     std::string program = "SET R1, 2\n"
@@ -493,5 +482,43 @@ TEST(TestProcessorPrograms, TestBranching)
     ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R1), 0xdead);
     ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R10), 0xdead);
     cpu.WriteRegister(RegisterId::RFL, 0);
-    cpu.ExecuteAll();    
+    cpu.ExecuteAll();
+}
+
+/*
+Instructions that need testing:
+JZ_RM
+JZ_MM
+JNZ_RM
+*/
+
+TEST(TestProcessorPrograms, TestBranching_Indirect)
+{
+    Assembler asmObj;
+    std::string program = "SET R0, h'dead\n"
+                          "SET_M R0, h'beef\n"
+                          "SET R1, h'100\n"
+                          "SET_M R1, 5\n"
+                          "NOT_M R0\n"
+                          "goto:R10\n"
+                          "MOV_RM R10, R9\n"
+                          "DEC_M R1 \n"
+                          "INC R2 ; counter \n"
+                          "JNZ_MM R1, R9\n"
+                          "TRAP ; TEST VAL\n"
+                          "STOP\n";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    // TRAP 1
+    // Masking with 0xffff because negating makes it into an int somehow
+    ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R0), ~0xbeefu & 0xffff);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R2), 5);
+    cpu.WriteRegister(RegisterId::RFL, 0);
+    cpu.ExecuteAll();
 }

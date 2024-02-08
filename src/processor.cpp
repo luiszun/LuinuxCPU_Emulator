@@ -591,7 +591,7 @@ void Processor::POP_M(std::vector<std::shared_ptr<Register>> args)
 }
 void Processor::NOT_M(std::vector<std::shared_ptr<Register>> args)
 {
-    auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
+    uint16_t derefA = _DereferenceRegisterRead(args.at(0)->registerId);
     derefA = ~derefA;
     _DereferenceRegisterWrite(args.at(0)->registerId, derefA);
 }
