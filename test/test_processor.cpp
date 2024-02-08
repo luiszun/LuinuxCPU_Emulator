@@ -489,7 +489,6 @@ TEST(TestProcessorPrograms, TestBranchingAndStack)
 Instructions that need testing:
 JZ_RM
 JZ_MM
-JNZ_RM
 */
 
 TEST(TestProcessorPrograms, TestBranching_Indirect)
@@ -506,6 +505,24 @@ TEST(TestProcessorPrograms, TestBranching_Indirect)
                           "INC R2 ; counter \n"
                           "JNZ_MM R1, R9\n"
                           "TRAP ; TEST VAL\n"
+                          "SET R0, 5 ; This conditions the n times to loop\n"
+                          "SETZ R1; This will be our counter\n"
+                          "goto:R9 ; loop on R9\n"
+                          "MOV_RM R9, R9 ; Because I want to jump to *R9\n"
+                          "DEC R0\n"
+                          "INC R1\n"
+                          "JNZ_RM R0, R9\n"
+                          "SET R0, 1 ; This will be used to count twice below\n"
+                          "goto:R10\n"
+                          "MOV_RM R10, R10\n"
+                          "DEC R0\n"
+                          "JZ_RM R0, R10\n"
+                          "TRAP ; R7 must have underflown and be 0xffff\n"
+                          "SET_M R7, 1 ; This will be used to count twice below\n"
+                          "goto:R10\n"
+                          "MOV_RM R10, R10\n"
+                          "DEC_M R7\n"
+                          "JZ_MM R7, R10\n"
                           "STOP\n";
 
     auto binProgram = asmObj.AssembleString(program);
@@ -521,4 +538,15 @@ TEST(TestProcessorPrograms, TestBranching_Indirect)
     ASSERT_EQ(cpu.ReadRegister(RegisterId::R2), 5);
     cpu.WriteRegister(RegisterId::RFL, 0);
     cpu.ExecuteAll();
+
+    // TRAP 2
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R1), 5);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R0), 0xffff);
+    cpu.WriteRegister(RegisterId::RFL, 0);
+    cpu.ExecuteAll();
+
+    // TRAP 3
+    ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R7), 0xffff);
+    cpu.WriteRegister(RegisterId::RFL, 0);
+    cpu.ExecuteAll();    
 }
