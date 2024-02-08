@@ -37,11 +37,19 @@ template <typename TAddressSpace> class Memory
         Write8(address + 1, static_cast<uint8_t>(value & 0x00ff));
     }
 
-    void WritePayload(TAddressSpace address, const unsigned char *shellCode, size_t size)
+    void WritePayload(TAddressSpace address, const char *shellCode, size_t size)
     {
         _ValidateAddress(address);
         std::memcpy(&_memory[address], shellCode, size);
     }
+
+    void WritePayload(TAddressSpace address, std::vector<uint8_t> payload)
+    {
+        _ValidateAddress(address);
+        std::memcpy(&_memory[address], &payload.at(0), payload.size());
+        // This will help us catch if the CPU tries to fetch non-payload instructions
+        _memory.resize(payload.size());
+    }    
 
     size_t Size() const
     {

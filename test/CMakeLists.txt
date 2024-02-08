@@ -31,4 +31,4 @@ target_link_libraries(Test PRIVATE
 # So that TestMate C++ can work with it
 configure_file("${PROJECT_DIR}/test/test_nvmemory.bin" "${UnitTest_DIR}/test_nvmemory.bin" COPYONLY)
 # So that CTest can work with it
-#configure_file("${PROJECT_DIR}/test/test_nvmemory.bin" "${UnitTest_DIR}/../test_nvmemory.bin" COPYONLY)
+configure_file("${PROJECT_DIR}/test/test_nvmemory.bin" "${UnitTest_DIR}/../test_nvmemory.bin" COPYONLY)

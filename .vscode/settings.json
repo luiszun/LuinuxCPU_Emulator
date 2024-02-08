@@ -93,7 +93,10 @@
 		"memory_resource": "cpp",
 		"random": "cpp",
 		"string_view": "cpp",
-		"shared_mutex": "cpp"
+		"shared_mutex": "cpp",
+		"numbers": "cpp",
+		"semaphore": "cpp",
+		"cinttypes": "cpp"
 	},
 	"C_Cpp.formatting": "clangFormat",
 	"C_Cpp.clang_format_fallbackStyle": "Microsoft",

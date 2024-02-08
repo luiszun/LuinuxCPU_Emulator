@@ -9,8 +9,8 @@ TEST(TestRegisterSuite, TestBasicReadWrite)
 {
     Memory8 mem(0xff);
 
-    Register R0(static_cast<uint8_t>(RegisterId::R0) * uint8_t{2}, mem);
-    Register RAC(static_cast<uint8_t>(RegisterId::RAC) * uint8_t{2}, mem);
+    Register R0(static_cast<uint8_t>(RegisterId::R0) * uint8_t{2}, mem, RegisterId::R0);
+    Register RAC(static_cast<uint8_t>(RegisterId::RAC) * uint8_t{2}, mem, RegisterId::RAC);
 
     R0.Write(0xdead);
     RAC.Write(0xbeef);

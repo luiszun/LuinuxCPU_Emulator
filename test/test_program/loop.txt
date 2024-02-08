@@ -5,3 +5,4 @@ goto:R2 ; loop on R2
 INC R10
 SUB R0, R10, R1
 JNZ R1, R2
+STOP
