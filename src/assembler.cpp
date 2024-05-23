@@ -6,7 +6,7 @@ uint16_t Assembler::EncodeInstructionWord(const OpCode &opCode, const std::array
     for (auto i = 0; i < opCode.argCount; ++i)
     {
         // If we ever hit this, something went wrong.
-        assert(opCode.argCount >= (i + 1));
+        LuinuxAssert(opCode.argCount >= (i + 1), "Somehow we're looping through more args than we expect.");
 
         auto nArgShiftCount = opCode.argCount - (i + 1);
         instructionWord |= (static_cast<uint16_t>(args[i]) << (nArgShiftCount * 4));
@@ -16,6 +16,11 @@ uint16_t Assembler::EncodeInstructionWord(const OpCode &opCode, const std::array
 
 uint16_t Assembler::GetValueFromStringLiteral(std::string literal) const
 {
+    if (_tagAddressMap.count(literal) > 0)
+    {
+        return _tagAddressMap.at(literal);
+    }
+
     const std::string hexLiteral = "h'";
     uint16_t unsignedValue = 0;
     int16_t signedValue = 0;
@@ -62,7 +67,7 @@ uint16_t Assembler::_WordToBigEndian(uint16_t word) const
     return result;
 }
 
-uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t instructionIndex)
+uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t instructionIndex, unsigned lineNumber)
 {
     instruction = _RemoveComments(instruction);
     // We have at max 3 arguments on any instruction
@@ -90,23 +95,35 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t inst
         throw std::runtime_error("Error: unrecognized mnemonic " + mnemonic);
     }
 
-    auto id = mnemonicTable.at(mnemonic);
-    const OpCode &opCode = opCodeTable.at(id);
+    auto opcodeId = mnemonicTable.at(mnemonic);
+    const OpCode &opCode = opCodeTable.at(opcodeId);
 
-    if (_IsSpecialInstruction(id))
+    if (_IsSpecialInstruction(opcodeId))
     {
-        line >> stringArgs[0];
-        line >> stringArgs[1];
+        bool hasRegisterArguments = false;
+        // JMP has no register arguments
+        if (opcodeId == OpCodeId::JMP)
+        {
+            line >> stringArgs[1];
+        }
+        else
+        {
+            line >> stringArgs[0];
+            line >> stringArgs[1];
+            hasRegisterArguments = true;
+        }
 
         const auto &regName = stringArgs[0];
         const auto &stringLiteral = stringArgs[1];
 
-        if (registerMap.count(regName) < 1)
+        if (hasRegisterArguments)
         {
-            throw std::runtime_error("Error: unrecognized register named " + regName);
+            if (registerMap.count(regName) < 1)
+            {
+                throw std::runtime_error("Error: unrecognized register named " + regName);
+            }
+            registerArgs[0] = reinterpret_cast<RegisterId>(registerMap.at(regName));
         }
-
-        registerArgs[0] = reinterpret_cast<RegisterId>(registerMap.at(regName));
 
         _literalValue = GetValueFromStringLiteral(stringLiteral);
         _pendingLiteralValue = true;
@@ -116,6 +133,7 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t inst
         {
             throw std::runtime_error("Instruction has more operators than expected.");
         }
+        _asmIndex.push_back({lineNumber, instructionIndex, opcodeId, registerArgs});
         return EncodeInstructionWord(opCode, registerArgs);
     }
 
@@ -135,6 +153,7 @@ uint16_t Assembler::EncodeInstructionWord(std::string instruction, uint16_t inst
     {
         throw std::runtime_error("Instruction has more operators than expected.");
     }
+    _asmIndex.push_back({lineNumber, instructionIndex, opcodeId, registerArgs});
     return EncodeInstructionWord(opCode, registerArgs);
 }
 
@@ -144,7 +163,6 @@ std::vector<uint8_t> Assembler::AssembleFile()
     std::string stringProgram;
 
     // This will keep track of the address the instruction is to be written
-    uint16_t instructionAddress = 0;
     if (!_canWriteFiles)
     {
         throw std::logic_error("No files were given to read and write.");
@@ -164,11 +182,48 @@ std::vector<uint8_t> Assembler::AssembleFile()
     return AssembleString(stringProgram);
 }
 
+std::string Assembler::_GetTag(std::string line) const
+{
+    std::smatch sm;
+    std::string tag = "";
+    // For now we don't know the addresses, those will get calculated when the actual assembling happens
+    if (std::regex_search(line, sm, std::regex("^:[a-zA-Z0-9]*")))
+    {
+        LuinuxAssert(sm.size() == 1, "Matched more than once when looking for a :Tag in the assembler.");
+        tag = sm.str(0);
+        LuinuxAssert(tag.size() > 1, "Expected the match to start with a colon (:). Something's wrong");
+        tag.erase(0, 1);
+    }
+    return tag;
+}
+
 std::vector<uint8_t> Assembler::AssembleString(std::string program)
 {
+    // First time just so that we can calculate the addresses of all tags
+    (void)_AssembleStringHelper(program);
+    _assembledPayload.clear();
+    _pendingLiteralValue = false;
+    _literalValue = 0;
+    // Now we do want to keep the code
+    return _AssembleStringHelper(program);
+}
+
+std::vector<uint8_t> Assembler::_AssembleStringHelper(std::string program)
+{
     std::stringstream ssProgram(program);
+    std::stringstream ssProgram_1stPass(program);
     std::string stringLine;
     std::vector<uint8_t> binProgram;
+
+    while (std::getline(ssProgram_1stPass, stringLine))
+    {
+        std::string tag = _GetTag(stringLine);
+        if (tag != "")
+        {
+            // a tag at the last byte is invalid
+            _tagAddressMap.insert({tag, 0xffff});
+        }
+    }
 
     // Address for the instruction to be written.
     uint16_t instructionIndex = 0;
@@ -180,10 +235,15 @@ std::vector<uint8_t> Assembler::AssembleString(std::string program)
         {
             continue;
         }
-
+        std::string tag = _GetTag(stringLine);
+        if (tag != "")
+        {
+            _tagAddressMap.at(tag) = instructionIndex;
+            continue;
+        }
         try
         {
-            auto instr = EncodeInstructionWord(stringLine, instructionIndex);
+            auto instr = EncodeInstructionWord(stringLine, instructionIndex, i);
             binProgram.push_back(instr >> 8);
             binProgram.push_back(instr & 0x00ff);
             instructionIndex += 2;
@@ -197,12 +257,13 @@ std::vector<uint8_t> Assembler::AssembleString(std::string program)
         }
         catch (const std::exception &e)
         {
-            throw std::runtime_error(e.what() + std::string(" on line i"));
+            throw std::runtime_error(e.what() + std::string(" on line " + std::to_string(i)));
         }
     }
     _assembledPayload = binProgram;
     return binProgram;
 }
+
 bool Assembler::_ContainsInstruction(std::string line) const
 {
     line = std::regex_replace(line, std::regex(";.*"), "");
@@ -235,10 +296,17 @@ void Assembler::WriteBinaryFile(std::vector<uint8_t> &program, bool stdOutPayloa
     }
 }
 
-bool Assembler::_IsSpecialInstruction(OpCodeId id) const
+bool Assembler::_IsSpecialInstruction(OpCodeId opcodeId) const
 {
-    // Remember that SET, and SET_M are special commands. We'll process them separately
-    return (id == OpCodeId::SET) || (id == OpCodeId::SET_M);
+    switch (opcodeId)
+    {
+    case OpCodeId::SET:
+    case OpCodeId::SET_M:
+    case OpCodeId::JMP:
+        return true;
+    default:
+        return false;
+    }
 }
 
 std::string Assembler::_RemoveComments(std::string str) const

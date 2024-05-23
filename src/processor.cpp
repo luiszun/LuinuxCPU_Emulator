@@ -33,9 +33,13 @@ void Processor::_DoPerformExecutionCycle()
     }
 }
 
-Processor::Processor(Memory16 &programMemory)
-    : _internalMemory(InternalMemorySize), _mainMemory(MainMemorySize), _programMemory(programMemory)
+Processor::Processor(Memory16 &programMemory, std::shared_ptr<NVMemory16> nvram)
+    : _programMemory(programMemory), _nvram(nvram), _internalMemory(InternalMemorySize)
 {
+    // By default write to sram.
+    _mainMemory = std::make_shared<Memory16>(Memory16(MainMemorySize));
+    _sram = _mainMemory;
+
     // Initialize the registers
     static_assert(static_cast<uint8_t>(RegisterId::RAC) == 0);
     for (auto i = RegisterId::RAC; i != RegisterId::END_OF_REGLIST; i = RegisterId(static_cast<uint8_t>(i) + 1))
@@ -56,13 +60,13 @@ void Processor::_CleanInstructionCycle()
 uint16_t Processor::_DereferenceRegisterRead(RegisterId reg) const
 {
     const auto address = _registers.at(reg).Read();
-    return _mainMemory.Read16(address);
+    return _mainMemory->Read16(address);
 }
 
 void Processor::_DereferenceRegisterWrite(RegisterId reg, uint16_t value)
 {
     const auto address = _registers.at(reg).Read();
-    _mainMemory.Write16(address, value);
+    _mainMemory->Write16(address, value);
 }
 
 void Processor::_FetchInstruction()
@@ -169,18 +173,20 @@ void Processor::_ExecuteInstruction()
         {OpCodeId::POP_M, &Processor::POP_M},   {OpCodeId::NOT_M, &Processor::NOT_M},
         {OpCodeId::SHFR_M, &Processor::SHFR_M}, {OpCodeId::SHFL_M, &Processor::SHFL_M},
         {OpCodeId::INC_M, &Processor::INC_M},   {OpCodeId::DEC_M, &Processor::DEC_M},
-        {OpCodeId::TRAP, &Processor::TRAP}};
+        {OpCodeId::TRAP, &Processor::TRAP},     {OpCodeId::SWM, &Processor::SWM}};
     _instructionStatus = InstructionCycle::Execute;
-    assert(_decodedOpCodeId != OpCodeId::INVALID_INSTR);
+    LuinuxAssert(_decodedOpCodeId != OpCodeId::INVALID_INSTR,
+                 "We are about to execute a instruction that we were not able to decode");
     std::vector<std::shared_ptr<Register>> argumentsAsRegisters;
 
     // Pack the arguments as pointers to the actual registers
-    for (auto i = 0; i < _instructionArgs.size(); ++i)
+    for (size_t i = 0; i < _instructionArgs.size(); ++i)
     {
         argumentsAsRegisters.push_back(std::make_shared<Register>(_registers.at(_instructionArgs.at(i))));
     }
 
-    assert(opCodeFunctionTable.count(_decodedOpCodeId) > 0);
+    LuinuxAssert(opCodeFunctionTable.count(_decodedOpCodeId) > 0,
+                 "The implementation of this OPCODE is missing in the Processor class");
     OpFunction fPtr = opCodeFunctionTable.at(_decodedOpCodeId);
 
     (*this.*fPtr)(argumentsAsRegisters);
@@ -228,7 +234,8 @@ void Processor::_Base_MUL(ConstantPair values, std::shared_ptr<Register> dest)
 }
 void Processor::_Base_DIV(ConstantPair values, std::shared_ptr<Register> dest)
 {
-    if(values.second == 0){
+    if (values.second == 0)
+    {
         FlagsObject f(ReadRegister(RegisterId::RFL));
         f.flags.Exception = 1;
         WriteRegister(RegisterId::RFL, f.value);
@@ -620,4 +627,29 @@ void Processor::TRAP(std::vector<std::shared_ptr<Register>> args)
     FlagsObject f(ReadRegister(RegisterId::RFL));
     f.flags.Trap = 1;
     WriteRegister(RegisterId::RFL, f.value);
+}
+
+void Processor::SWM(std::vector<std::shared_ptr<Register>> args)
+{
+    FlagsObject f(ReadRegister(RegisterId::RFL));
+    f.flags.Memory ^= 1; // Flip the bit
+    WriteRegister(RegisterId::RFL, f.value);
+
+    if (0 == f.flags.Memory)
+    {
+        _mainMemory = _sram;
+    }
+    else
+    {
+        if (_nvram == nullptr)
+        {
+            throw std::runtime_error("Trying to use NVRAM, but it was not prepared on this setup.");
+        }
+        _mainMemory = _nvram;
+    }
+}
+
+void Processor::JMP(std::vector<std::shared_ptr<Register>> args)
+{
+    WriteRegister(RegisterId::RIP, _2wordOperand);
 }

@@ -42,7 +42,7 @@ TEST(TestMemorySuite, TestNonVolatileMemoryReadWrite)
     std::array<uint8_t, 17> memdmp2 = {0xde, 0xad, 0xbe, 0xef, 0x0,  0x0,  0x0,  0x0, 0xc0,
                                        0x8b, 0xad, 0xf0, 0x0d, 0x01, 0x02, 0x03, 0x04};
 
-    assert(memdmp.size() == memdmp2.size());
+    static_assert(memdmp.size() == memdmp2.size());
 
     // First read and make sure it was done correctly the last time
     for (unsigned i = 0; i < memdmp.size(); ++i)

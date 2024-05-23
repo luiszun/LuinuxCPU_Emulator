@@ -49,7 +49,7 @@ template <typename TAddressSpace> class Memory
         std::memcpy(&_memory[address], &payload.at(0), payload.size());
         // This will help us catch if the CPU tries to fetch non-payload instructions
         _memory.resize(payload.size());
-    }    
+    }
 
     size_t Size() const
     {
@@ -97,7 +97,7 @@ template <typename TAddressSpace> class NVMemory : public Memory<TAddressSpace>
     void _FlushIn()
     {
         _inFile.open(_filename, std::ios::binary | std::ios::in);
-        assert(_inFile.is_open());
+        LuinuxAssert(_inFile.is_open(), "Failed to open the file for NVRAM");
 
         _inFile.read(reinterpret_cast<char *>(&(this->_memory[0])), this->_memory.size());
         _inFile.close();
@@ -121,7 +121,7 @@ template <typename TAddressSpace> class NonByteAddressableMemory : public Memory
         size_t realAddress = address * sizeof(TAddressSpace);
         // If this processor was little endian, we'd just put a ptr and return *p
         return (static_cast<TAddressSpace>(this->_memory.at(realAddress) << 8) |
-               static_cast<TAddressSpace>(this->_memory.at(realAddress + 1)));
+                static_cast<TAddressSpace>(this->_memory.at(realAddress + 1)));
     }
 
     void Write16(TAddressSpace address, uint16_t value)

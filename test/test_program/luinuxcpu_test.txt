@@ -1,0 +1,13 @@
+; This program simply finds the last zeroe'd address and writes its address onto that corresponding address
+SWM ; So this on nvram
+SET R0, h'fffd ; R0 = address of the last zero'ed address, fffd is the last 16 bit valid address
+SET R1, FindAddress ; R1 = FindAddress(Loop)
+SET R2, GotAddress  ; R2 = GotAddress(break)
+:FindAddress
+JZ_MR R0, R2
+DEC R0
+DEC R0
+JNZ R0, R1 ; JMP is not implemented yet :(
+:GotAddress
+MOV_RM R0, R0 ; This will put the memaddress into that same memaddress
+STOP

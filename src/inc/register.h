@@ -34,7 +34,8 @@ enum class FlagsRegister : uint16_t
     Trap = 0x0008,
     Reserved = 0x0010,
     StackOverflow = 0x0020,
-    Exception = 0x0040
+    Exception = 0x0040,
+    Memory = 0x0080 // 0=SRAM, 1=NVRAM
 };
 
 extern const std::unordered_map<std::string, RegisterId> registerMap;
@@ -43,7 +44,7 @@ class Register
 {
   public:
     Register(uint16_t address, Memory8 &memory, RegisterId inRegisterId)
-        : _address(address), _memory(memory), registerId(inRegisterId)
+        : registerId(inRegisterId), _address(address), _memory(memory)
     {
     }
 
@@ -74,11 +75,14 @@ struct FlagsUnion
     unsigned Reserved : 1;
     unsigned StackOverflow : 1;
     unsigned Exception : 1;
+    unsigned Memory : 1;
 };
 
 union FlagsObject {
     FlagsUnion flags;
     uint16_t value;
 
-    FlagsObject(uint16_t v) : value(v){}
+    FlagsObject(uint16_t v) : value(v)
+    {
+    }
 };

@@ -16,3 +16,10 @@
 #include <tuple>
 #include <unordered_map>
 #include <vector>
+
+inline void LuinuxAssert(bool assrt, std::string str)
+{
+    if (assrt)
+        return;
+    throw std::runtime_error(str);
+}

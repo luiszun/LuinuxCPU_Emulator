@@ -70,6 +70,8 @@ enum class OpCodeId
     INC_M,
     DEC_M,
     TRAP,
+    SWM,
+    JMP,
     INVALID_INSTR
 };
 

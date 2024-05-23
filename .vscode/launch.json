@@ -1,34 +1,26 @@
 {
 	"configurations": [
-		{
-			"type": "cmake",
-			"request": "launch",
-			"name": "CMakeLists.txt",
-			"cmakeDebugType": "configure",
-			"scriptPath": "/home/luiszun/git/LuinixCPU_Emu/CMakeLists.txt"
-		},
 	{
-		"name": "(gdb) Launch",
-		"type": "cppdbg",
+		"name": "Test.exe Launch",
+		"type": "cppvsdbg",
 		"request": "launch",
-		"program": "~/git/LuinixCPU_Emu/build/test/Test",
+		"program": "C:/Users/japo/git/LuinuxCPU_dev/build/test/Test.exe",
 		"args": [],
 		"stopAtEntry": false,
-		"cwd": "~/git/LuinixCPU_Emu/build/",
+		"cwd": "C:/Users/japo/git/LuinuxCPU_dev/build",
 		"environment": [],
-		"externalConsole": false,
-		"MIMode": "gdb",
-		"setupCommands": [
-		    {
-			"description": "Enable pretty-printing for gdb",
-			"text": "-enable-pretty-printing",
-			"ignoreFailures": true
-		    },
-		    {
-			"description": "Set Disassembly Flavor to Intel",
-			"text": "-gdb-set disassembly-flavor intel",
-			"ignoreFailures": true
-		   
+		"console": "internalConsole"
+	}, 
+	{
+		"name": "luinuxcpu.exe Launch",
+		"type": "cppvsdbg",
+		"request": "launch",
+		"program": "C:/Users/japo/git/LuinuxCPU_dev/build/src/luinuxcpu.exe",
+		"args": ["luinuxcpu_test.bin", "test_nvmemory.bin"],
+		"stopAtEntry": false,
+		"cwd": "C:/Users/japo/git/LuinuxCPU_dev/build",
+		"environment": [],
+		"console": "internalConsole"
 	}
 	]
 }

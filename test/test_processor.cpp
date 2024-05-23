@@ -6,13 +6,14 @@
 #include "processor.h"
 
 using Memory16 = Memory<uint16_t>;
+using TestNVMemory = NVMemory<uint16_t>;
 
 const char loop10xShellCode[] = "\x76\x25\x00\x10\x76\x26\x00\x01\x45\x67\x76\x25\x00\x0e";
 
 class TestProcessor : public Processor
 {
   public:
-    TestProcessor(Memory16 &mem) : Processor(mem)
+    TestProcessor(Memory16 &mem, std::shared_ptr<TestNVMemory> nvram = nullptr) : Processor(mem, nvram)
     {
     }
 
@@ -51,7 +52,7 @@ class TestProcessor : public Processor
 
     Memory16 &GetMainMemory()
     {
-        return _mainMemory;
+        return *_mainMemory;
     }
 
     uint16_t DereferenceRegisterRead(RegisterId reg)
@@ -548,5 +549,132 @@ TEST(TestProcessorPrograms, TestBranching_Indirect)
     // TRAP 3
     ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R7), 0xffff);
     cpu.WriteRegister(RegisterId::RFL, 0);
-    cpu.ExecuteAll();    
+    cpu.ExecuteAll();
+}
+
+TEST(TestProcessorPrograms, TestSWM)
+{
+    Assembler asmObj;
+    std::string program = "TRAP\n"
+                          "SWM\n"
+                          "TRAP\n"
+                          "SWM\n"
+                          "STOP\n";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+
+    std::shared_ptr<NVMemory16> nvram = std::make_shared<NVMemory16>(0x10000, "test_nvmemory.bin");
+    TestProcessor cpu(programMemory, nvram);
+    cpu.ExecuteAll();
+    {
+        // TRAP 1
+        FlagsObject f(cpu.ReadRegister(RegisterId::RFL));
+        ASSERT_EQ(f.flags.Memory, 0);
+        cpu.WriteRegister(RegisterId::RFL, 0);
+        cpu.ExecuteAll();
+    }
+    {
+        // TRAP 2
+        FlagsObject f(cpu.ReadRegister(RegisterId::RFL));
+        ASSERT_EQ(f.flags.Memory, 1);
+        f.flags.Trap = 0;
+        cpu.WriteRegister(RegisterId::RFL, f.value);
+        cpu.ExecuteAll();
+    }
+    {
+        // STOP
+        FlagsObject f(cpu.ReadRegister(RegisterId::RFL));
+        ASSERT_EQ(f.flags.Memory, 0);
+    }
+}
+
+TEST(TestProcessorPrograms, TestNVRamWriting)
+{
+    Assembler asmObj;
+    std::shared_ptr<TestNVMemory> nvram = std::make_shared<TestNVMemory>(0x10000, "test_nvmemory.bin");
+
+    uint16_t topAddress = 0x10000 - 2;
+
+    while (0 != nvram->Read16(topAddress))
+    {
+        topAddress -= 2;
+    }
+    std::string program = "SWM\n"
+                          "SET R0, " +
+                          std::to_string(topAddress) +
+                          "\n"
+                          "TRAP\n"
+                          "SET_M R0, h'ffff\n"
+                          "TRAP\n"
+                          "SWM\n"
+                          "STOP\n";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory, nvram);
+    cpu.ExecuteAll();
+
+    {
+        // TRAP 1
+        FlagsObject f(cpu.ReadRegister(RegisterId::RFL));
+        f.flags.Trap = 0;
+        cpu.WriteRegister(RegisterId::RFL, f.value);
+        ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R0), 0);
+        cpu.ExecuteAll();
+    }
+    {
+        // TRAP 2
+        FlagsObject f(cpu.ReadRegister(RegisterId::RFL));
+        f.flags.Trap = 0;
+        cpu.WriteRegister(RegisterId::RFL, f.value);
+        ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R0), 0xffff);
+        cpu.ExecuteAll();
+
+        // Now using sram
+        ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R0), 0);
+    }
+}
+
+TEST(TestProcessorPrograms, TestNonNVRamFail)
+{
+    Assembler asmObj;
+    std::string program = "SWM\n"
+                          "STOP\n";
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    EXPECT_ANY_THROW(cpu.ExecuteAll());
+}
+
+TEST(TestProcessorPrograms, TestJMP)
+{
+    Assembler asmObj;
+    std::string program =
+        "; This program simply finds the last zeroe'd address and writes its address onto that corresponding address\n"
+        "SET R0, h'fffd ; R0 = address of the last zero'ed address, fffd is the last 16 bit valid address\n"
+        "SET R1, FindAddress ; R1 = FindAddress(Loop)\n"
+        "SET R2, GotAddress  ; R2 = GotAddress(break)\n"
+        ":FindAddress\n"
+        "JZ_MR R0, R2\n"
+        "DEC R0\n"
+        "DEC R0\n"
+        "JMP FindAddress\n"
+        ":GotAddress\n"
+        "MOV_RM R0, R0 ; This will put the memaddress into that same memaddress\n"
+        "STOP\n";
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_GT(cpu.ReadRegister(RegisterId::R0), 0xffaa);
 }

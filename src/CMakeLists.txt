@@ -12,3 +12,7 @@ target_link_libraries(luinuxasm Assembler data_table)
 add_library(processor STATIC processor.cpp)
 target_include_directories(processor PRIVATE ${SRC_INC_DIR})
 target_link_libraries(processor data_table)
+
+add_executable(luinuxcpu luinuxcpu.cpp)
+target_include_directories(luinuxcpu PRIVATE ${SRC_INC_DIR})
+target_link_libraries(luinuxcpu data_table processor)

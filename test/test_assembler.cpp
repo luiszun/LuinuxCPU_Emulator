@@ -92,7 +92,8 @@ TEST(TestAssemblerSuite, TestGoto)
     Assembler asmObj;
     std::string program = "SET R0, h'100\nSET R1, h'001\nAND R0, R1, R2\ngoto:R0";
 
-    std::vector<uint8_t> expectedBinary{0x76, 0x25, 0x01, 0x00, 0x76, 0x26, 0x00, 0x01, 0x45, 0x67, 0x76, 0x25, 0x00, 0x0e};
+    std::vector<uint8_t> expectedBinary{0x76, 0x25, 0x01, 0x00, 0x76, 0x26, 0x00,
+                                        0x01, 0x45, 0x67, 0x76, 0x25, 0x00, 0x0e};
 
     auto binProgram = asmObj.AssembleString(program);
     ASSERT_EQ(expectedBinary, binProgram);
@@ -120,7 +121,7 @@ TEST(TestAssemblerSuite, TestLoop10x)
                           "JNZ R1, R2\n"
                           "STOP";
     std::vector<uint8_t> expectedBinary{0x76, 0x25, 0x00, 0x0a, 0x76, 0x2f, 0x00, 0x00, 0x76, 0x27,
-                                         0x00, 0x0c, 0x76, 0x8f, 0x15, 0xf6, 0x71, 0x67, 0x76, 0x91};
+                                        0x00, 0x0c, 0x76, 0x8f, 0x15, 0xf6, 0x71, 0x67, 0x76, 0x91};
 
     auto binProgram = asmObj.AssembleString(program);
     std::string str = asmObj.GetAssembledPayloadHex();
@@ -128,5 +129,30 @@ TEST(TestAssemblerSuite, TestLoop10x)
     ASSERT_STREQ(
         str.c_str(),
         "\\x76\\x25\\x00\\x0a\\x76\\x2f\\x00\\x00\\x76\\x27\\x00\\x0c\\x76\\x8f\\x15\\xf6\\x71\\x67\\x76\\x91");
+    ASSERT_EQ(expectedBinary, binProgram);
+}
+
+TEST(TestAssemblerSuite, TestAddressTags)
+{
+    Assembler asmObj;
+    std::string program = "SET R0, 10 ; This is the number of times it will loop\n"
+                          "SET R10, 0 ; Initialize R10 to be our counter\n"
+                          "SET R2 LoopTag\n"
+                          ":LoopTag ; loop on R2\n"
+                          "INC R10\n"
+                          "SUB R0, R10, R1\n"
+                          ":UselessTag\n"
+                          "JNZ R1, R2\n"
+                          "STOP\n"
+                          "SET R0 UselessTag ; Unreachable code\n";
+    std::vector<uint8_t> expectedBinary{0x76, 0x25, 0x00, 0x0a, 0x76, 0x2f, 0x00, 0x00, 0x76, 0x27,
+                                        0x00, 0x0c, 0x76, 0x8f, 0x15, 0xf6, 0x71, 0x67, 0x76, 0x91, 0x76, 0x25, 0x00, 0x10};
+
+    auto binProgram = asmObj.AssembleString(program);
+    std::string str = asmObj.GetAssembledPayloadHex();
+
+    ASSERT_STREQ(
+        str.c_str(),
+        "\\x76\\x25\\x00\\x0a\\x76\\x2f\\x00\\x00\\x76\\x27\\x00\\x0c\\x76\\x8f\\x15\\xf6\\x71\\x67\\x76\\x91\\x76\\x25\\x00\\x10");
     ASSERT_EQ(expectedBinary, binProgram);
 }

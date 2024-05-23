@@ -1,4 +1,5 @@
 include(FetchContent)
+include(CTest)
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
@@ -32,3 +33,19 @@ target_link_libraries(Test PRIVATE
 configure_file("${PROJECT_DIR}/test/test_nvmemory.bin" "${UnitTest_DIR}/test_nvmemory.bin" COPYONLY)
 # So that CTest can work with it
 configure_file("${PROJECT_DIR}/test/test_nvmemory.bin" "${UnitTest_DIR}/../test_nvmemory.bin" COPYONLY)
+
+# So that TestMate C++ can work with it
+configure_file("${PROJECT_DIR}/test/luinuxcpu_test.bin" "${UnitTest_DIR}/luinuxcpu_test.bin" COPYONLY)
+# So that CTest can work with it
+configure_file("${PROJECT_DIR}/test/luinuxcpu_test.bin" "${UnitTest_DIR}/../luinuxcpu_test.bin" COPYONLY)
+
+# $ LuinuxCPU_dev/build $ gcovr --html-nested coverage.html -r ..
+if (UNIX)
+    # do something
+    include(CTestCoverageCollectGCOV)
+    ctest_coverage_collect_gcov(
+      TARBALL "code_coverage.tar"
+      SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/test"
+      BUILD "${PROJECT_BUILD_DIR}"
+      )
+endif (UNIX)

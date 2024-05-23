@@ -25,7 +25,7 @@ enum class InstructionCycle
 class Processor
 {
   public:
-    Processor(Memory16 &programMemory);
+    Processor(Memory16 &programMemory, std::shared_ptr<NVMemory16> nvram = nullptr);
 
     void WriteRegister(RegisterId reg, uint16_t value);
     uint16_t ReadRegister(RegisterId reg) const;
@@ -141,9 +141,13 @@ class Processor
     void INC_M(std::vector<std::shared_ptr<Register>> args);
     void DEC_M(std::vector<std::shared_ptr<Register>> args);
     void TRAP(std::vector<std::shared_ptr<Register>> args);
+    void SWM(std::vector<std::shared_ptr<Register>> args);
+    void JMP(std::vector<std::shared_ptr<Register>> args);
 
     Memory16 &_programMemory;
-    Memory16 _mainMemory;
+    std::shared_ptr<Memory16> _mainMemory;
+    std::shared_ptr<Memory16> _sram;
+    std::shared_ptr<NVMemory16> _nvram;
     Memory8 _internalMemory;
     std::unordered_map<RegisterId, Register> _registers;
 
