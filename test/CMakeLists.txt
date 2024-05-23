@@ -40,12 +40,12 @@ configure_file("${PROJECT_DIR}/test/luinuxcpu_test.bin" "${UnitTest_DIR}/luinuxc
 configure_file("${PROJECT_DIR}/test/luinuxcpu_test.bin" "${UnitTest_DIR}/../luinuxcpu_test.bin" COPYONLY)
 
 # $ LuinuxCPU_dev/build $ gcovr --html-nested coverage.html -r ..
-if (UNIX)
-    # do something
-    include(CTestCoverageCollectGCOV)
-    ctest_coverage_collect_gcov(
-      TARBALL "code_coverage.tar"
-      SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/test"
-      BUILD "${PROJECT_BUILD_DIR}"
-      )
-endif (UNIX)
+# if (UNIX)
+#     # do something
+#     include(CTestCoverageCollectGCOV)
+#     ctest_coverage_collect_gcov(
+#       TARBALL "code_coverage.tar"
+#       SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/test"
+#       BUILD "${PROJECT_BUILD_DIR}"
+#       )
+# endif (UNIX)
