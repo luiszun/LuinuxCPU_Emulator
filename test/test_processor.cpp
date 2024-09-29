@@ -486,12 +486,6 @@ TEST(TestProcessorPrograms, TestBranchingAndStack)
     cpu.ExecuteAll();
 }
 
-/*
-Instructions that need testing:
-JZ_RM
-JZ_MM
-*/
-
 TEST(TestProcessorPrograms, TestBranching_Indirect)
 {
     Assembler asmObj;
@@ -658,7 +652,7 @@ TEST(TestProcessorPrograms, TestJMP)
     Assembler asmObj;
     std::string program =
         "; This program simply finds the last zeroe'd address and writes its address onto that corresponding address\n"
-        "SET R0, h'fffd ; R0 = address of the last zero'ed address, fffd is the last 16 bit valid address\n"
+        "SET R0, h'fffe ; R0 = address of the last zero'ed address, fffe is the last 16 bit valid address\n"
         "SET R1, FindAddress ; R1 = FindAddress(Loop)\n"
         "SET R2, GotAddress  ; R2 = GotAddress(break)\n"
         ":FindAddress\n"
@@ -677,4 +671,65 @@ TEST(TestProcessorPrograms, TestJMP)
     cpu.ExecuteAll();
 
     ASSERT_GT(cpu.ReadRegister(RegisterId::R0), 0xffaa);
+}
+
+TEST(TestProcessorPrograms, TestJE)
+{
+    Assembler asmObj;
+    std::string program =
+        "; This program force tests JE and JNE by following the propoer jumps and ensuring the comply\n"
+        "; RAC(dead)== R2(dead) RAC->cafe\n"
+        "; RAC(dead)!= R2(dead) RAC->f00d\n"
+        "SET RAC, h'dead\n"
+        "SET R0, SaveCafe ; R0 = SaveCafe\n"
+        "SET R1, SaveFood  ; R1 = SaveFood\n"
+        "SET R2, h'dead\n"
+        "SET R3, h'beef\n"
+        "JE R2, R0 ; if R2(dead) == RAC(dead)JMP R0(SaveCafe)\n"
+        "STOP\n"
+        ":SaveCafe\n"
+        "SET RAC, h'cafe\n"
+        "STOP\n"
+        ":SaveFood\n"
+        "SET RAC, h'f00d\n"
+        "STOP\n";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 0xcafe);
+}
+
+TEST(TestProcessorPrograms, TestJNE)
+{
+    Assembler asmObj;
+    std::string program =
+        "; This program force tests JE and JNE by following the propoer jumps and ensuring the comply\n"
+        "; RAC(dead)== R2(dead) RAC->cafe\n"
+        "; RAC(dead)!= R2(dead) RAC->f00d\n"
+        "SET RAC, h'beef\n"
+        "SET R0, SaveCafe ; R0 = SaveCafe\n"
+        "SET R1, SaveFood  ; R1 = SaveFood\n"
+        "SET R2, h'dead\n"
+        "SET R3, h'beef\n"
+        "JNE R2, R1 ; if R2(dead) != RAC(beef)JMP R0(SaveFood)\n"
+        ":SaveCafe\n"
+        "SET RAC, h'cafe\n"
+        "STOP\n"
+        ":SaveFood\n"
+        "SET RAC, h'f00d\n"
+        "STOP\n";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 0xf00d);
 }

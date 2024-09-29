@@ -13,6 +13,8 @@ enum class OpCodeId
     JZ,
     JNZ,
     MOV,
+    JE,
+    JNE,
     LOAD,
     STOR,
     TSTB,

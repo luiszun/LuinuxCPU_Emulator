@@ -4,10 +4,10 @@
 		"name": "Test.exe Launch",
 		"type": "cppvsdbg",
 		"request": "launch",
-		"program": "C:/Users/japo/git/LuinuxCPU_dev/build/test/Test.exe",
-		"args": [],
+		"program": "C:/Users/japo/git/LuinuxCPU_Emulator/build/test/Test.exe",
+		"C:/Users/japo/git/LuinuxCPU_Emulator/build/test/Test.exe",args": [],
 		"stopAtEntry": false,
-		"cwd": "C:/Users/japo/git/LuinuxCPU_dev/build",
+		"cwd": "C:/Users/japo/git/LuinuxCPU_Emulator/build",
 		"environment": [],
 		"console": "internalConsole"
 	}, 
@@ -15,10 +15,10 @@
 		"name": "luinuxcpu.exe Launch",
 		"type": "cppvsdbg",
 		"request": "launch",
-		"program": "C:/Users/japo/git/LuinuxCPU_dev/build/src/luinuxcpu.exe",
+		"program": "C:/Users/japo/git/LuinuxCPU_Emulator/build/src/luinuxcpu.exe",
 		"args": ["luinuxcpu_test.bin", "test_nvmemory.bin"],
 		"stopAtEntry": false,
-		"cwd": "C:/Users/japo/git/LuinuxCPU_dev/build",
+		"cwd": "C:/Users/japo/git/LuinuxCPU_Emulator/build",
 		"environment": [],
 		"console": "internalConsole"
 	}

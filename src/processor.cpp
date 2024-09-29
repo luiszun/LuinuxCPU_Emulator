@@ -146,6 +146,7 @@ void Processor::_ExecuteInstruction()
         {OpCodeId::AND, &Processor::AND},       {OpCodeId::OR, &Processor::OR},
         {OpCodeId::XOR, &Processor::XOR},       {OpCodeId::JZ, &Processor::JZ},
         {OpCodeId::JNZ, &Processor::JNZ},       {OpCodeId::MOV, &Processor::MOV},
+        {OpCodeId::JE, &Processor::JE},         {OpCodeId::JNE, &Processor::JNE},
         {OpCodeId::TSTB, &Processor::TSTB},     {OpCodeId::SETZ, &Processor::SETZ},
         {OpCodeId::SETO, &Processor::SETO},     {OpCodeId::SET, &Processor::SET},
         {OpCodeId::PUSH, &Processor::PUSH},     {OpCodeId::POP, &Processor::POP},
@@ -440,6 +441,22 @@ void Processor::JNZ(std::vector<std::shared_ptr<Register>> args)
 {
     auto vals = _Get_RR(args);
     _Base_JNZ(vals);
+}
+void Processor::JE(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RR(args);
+    if (vals.first == _registers.at(RegisterId::RAC).Read())
+    {
+        WriteRegister(RegisterId::RIP, vals.second);
+    }
+}
+void Processor::JNE(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RR(args);
+    if (vals.first != _registers.at(RegisterId::RAC).Read())
+    {
+        WriteRegister(RegisterId::RIP, vals.second);
+    }
 }
 void Processor::MOV(std::vector<std::shared_ptr<Register>> args)
 {
