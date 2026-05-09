@@ -71,6 +71,8 @@ class Processor
     void _Base_SUB(ConstantPair values, std::shared_ptr<Register> dest);
     void _Base_MUL(ConstantPair values, std::shared_ptr<Register> dest);
     void _Base_DIV(ConstantPair values, std::shared_ptr<Register> dest);
+    void _Base_SMUL(ConstantPair values, std::shared_ptr<Register> dest);
+    void _Base_SDIV(ConstantPair values, std::shared_ptr<Register> dest);
     void _Base_AND(ConstantPair values, std::shared_ptr<Register> dest);
     void _Base_OR(ConstantPair values, std::shared_ptr<Register> dest);
     void _Base_XOR(ConstantPair values, std::shared_ptr<Register> dest);
@@ -79,9 +81,11 @@ class Processor
     void ADD(std::vector<std::shared_ptr<Register>> args);
     void SUB(std::vector<std::shared_ptr<Register>> args);
     void MUL(std::vector<std::shared_ptr<Register>> args);
+    void SMUL(std::vector<std::shared_ptr<Register>> args);
     void STOP(std::vector<std::shared_ptr<Register>> args);
     void SET(std::vector<std::shared_ptr<Register>> args);
     void DIV(std::vector<std::shared_ptr<Register>> args);
+    void SDIV(std::vector<std::shared_ptr<Register>> args);
     void AND(std::vector<std::shared_ptr<Register>> args);
     void OR(std::vector<std::shared_ptr<Register>> args);
     void XOR(std::vector<std::shared_ptr<Register>> args);

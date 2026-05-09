@@ -155,7 +155,8 @@ void Processor::_ExecuteInstruction()
     typedef void (Processor::*OpFunction)(std::vector<std::shared_ptr<Register>>);
     static const std::unordered_map<OpCodeId, OpFunction> opCodeFunctionTable = {
         {OpCodeId::ADD, &Processor::ADD},       {OpCodeId::SUB, &Processor::SUB},
-        {OpCodeId::MUL, &Processor::MUL},       {OpCodeId::DIV, &Processor::DIV},
+        {OpCodeId::MUL, &Processor::MUL},       {OpCodeId::SMUL, &Processor::SMUL},
+        {OpCodeId::DIV, &Processor::DIV},       {OpCodeId::SDIV, &Processor::SDIV},
         {OpCodeId::AND, &Processor::AND},       {OpCodeId::OR, &Processor::OR},
         {OpCodeId::XOR, &Processor::XOR},       {OpCodeId::JZ, &Processor::JZ},
         {OpCodeId::JNZ, &Processor::JNZ},       {OpCodeId::MOV, &Processor::MOV},
@@ -243,6 +244,7 @@ void Processor::_Base_ADD(ConstantPair values, std::shared_ptr<Register> dest)
 
     // Update flags
     FlagsObject f(ReadRegister(RegisterId::RFL));
+    f.flags.Exception = 0;
     f.flags.Zero = (static_cast<uint16_t>(result) == 0) ? 1 : 0;
     f.flags.Negative = (static_cast<uint16_t>(result) & 0x8000) ? 1 : 0;
     f.flags.Carry = (result > 0xffff) ? 1 : 0;
@@ -267,6 +269,7 @@ void Processor::_Base_SUB(ConstantPair values, std::shared_ptr<Register> dest)
 
     // Update flags
     FlagsObject f(ReadRegister(RegisterId::RFL));
+    f.flags.Exception = 0;
     f.flags.Zero = (static_cast<uint16_t>(result) == 0) ? 1 : 0;
     f.flags.Negative = (static_cast<uint16_t>(result) & 0x8000) ? 1 : 0;
     f.flags.Carry = (a < b) ? 1 : 0;
@@ -287,12 +290,33 @@ void Processor::_Base_MUL(ConstantPair values, std::shared_ptr<Register> dest)
 
     // Update flags
     FlagsObject f(ReadRegister(RegisterId::RFL));
+    f.flags.Exception = 0;
     f.flags.Zero = (static_cast<uint16_t>(result) == 0) ? 1 : 0;
     f.flags.Negative = (static_cast<uint16_t>(result) & 0x8000) ? 1 : 0;
     f.flags.Carry = (result > 0xffff) ? 1 : 0;
     f.flags.Overflow = 0;  // Overflow doesn't apply to unsigned multiplication
     WriteRegister(RegisterId::RFL, f.value);
 }
+
+void Processor::_Base_SMUL(ConstantPair values, std::shared_ptr<Register> dest)
+{
+    int32_t a = static_cast<int16_t>(values.first);
+    int32_t b = static_cast<int16_t>(values.second);
+    int32_t result = a * b;
+    dest->Write(static_cast<uint16_t>(result));
+
+    // Update flags
+    FlagsObject f(ReadRegister(RegisterId::RFL));
+    f.flags.Exception = 0;
+    f.flags.Zero = (static_cast<uint16_t>(result) == 0) ? 1 : 0;
+    f.flags.Negative = (static_cast<uint16_t>(result) & 0x8000) ? 1 : 0;
+    // For signed multiply, set carry if result doesn't fit in 16-bit unsigned
+    f.flags.Overflow = ((result > 0x7fff) || (result < -0x8000)) ? 1 : 0;
+    // For signed, the carry doesn't mean anything different
+    f.flags.Carry = f.flags.Overflow;
+    WriteRegister(RegisterId::RFL, f.value);
+}
+
 void Processor::_Base_DIV(ConstantPair values, std::shared_ptr<Register> dest)
 {
     if (values.second == 0)
@@ -307,10 +331,36 @@ void Processor::_Base_DIV(ConstantPair values, std::shared_ptr<Register> dest)
 
     // Update flags
     FlagsObject f(ReadRegister(RegisterId::RFL));
+    f.flags.Exception = 0;
     f.flags.Zero = (static_cast<uint16_t>(result) == 0) ? 1 : 0;
     f.flags.Negative = (result & 0x8000) ? 1 : 0;
     f.flags.Carry = 0;     // Division doesn't have carry
     f.flags.Overflow = 0;  // Overflow doesn't apply to unsigned division
+    WriteRegister(RegisterId::RFL, f.value);
+}
+
+void Processor::_Base_SDIV(ConstantPair values, std::shared_ptr<Register> dest)
+{
+    int16_t a = static_cast<int16_t>(values.first);
+    int16_t b = static_cast<int16_t>(values.second);
+    if (b == 0)
+    {
+        FlagsObject f(ReadRegister(RegisterId::RFL));
+        f.flags.Exception = 1;
+        WriteRegister(RegisterId::RFL, f.value);
+        return;
+    }
+    // Check overflow: INT16_MIN / -1 overflows
+    int32_t result = static_cast<int32_t>(a) / static_cast<int32_t>(b);
+    dest->Write(static_cast<uint16_t>(result));
+
+    FlagsObject f(ReadRegister(RegisterId::RFL));
+    f.flags.Exception = 0;
+    f.flags.Zero = (static_cast<uint16_t>(result) == 0) ? 1 : 0;
+    f.flags.Negative = (static_cast<uint16_t>(result) & 0x8000) ? 1 : 0;
+    f.flags.Carry = 0;
+    // -32768 / -1 = 32768 which doesn't fit in int16, so it overflows
+    f.flags.Overflow = (a == INT16_MIN && b == -1) ? 1 : 0;
     WriteRegister(RegisterId::RFL, f.value);
 }
 void Processor::_Base_AND(ConstantPair values, std::shared_ptr<Register> dest)
@@ -355,10 +405,20 @@ void Processor::MUL(std::vector<std::shared_ptr<Register>> args)
     auto vals = _Get_RR(args);
     _Base_MUL(vals, args.at(2));
 }
+void Processor::SMUL(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RR(args);
+    _Base_SMUL(vals, args.at(2));
+}
 void Processor::DIV(std::vector<std::shared_ptr<Register>> args)
 {
     auto vals = _Get_RR(args);
     _Base_DIV(vals, args.at(2));
+}
+void Processor::SDIV(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RR(args);
+    _Base_SDIV(vals, args.at(2));
 }
 void Processor::AND(std::vector<std::shared_ptr<Register>> args)
 {
@@ -390,6 +450,12 @@ void Processor::SUB_MR(std::vector<std::shared_ptr<Register>> args)
 void Processor::MUL_MR(std::vector<std::shared_ptr<Register>> args)
 {
     auto vals = _Get_MR(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_MUL(vals, racPtr);
+}
+void Processor::MUL_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MM(args);
     std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
     _Base_MUL(vals, racPtr);
 }
@@ -470,12 +536,6 @@ void Processor::SUB_MM(std::vector<std::shared_ptr<Register>> args)
     auto vals = _Get_MM(args);
     std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
     _Base_SUB(vals, racPtr);
-}
-void Processor::MUL_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_MUL(vals, racPtr);
 }
 void Processor::DIV_MM(std::vector<std::shared_ptr<Register>> args)
 {

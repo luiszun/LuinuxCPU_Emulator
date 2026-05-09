@@ -7,6 +7,8 @@ enum class OpCodeId
     SUB,
     MUL,
     DIV,
+    SMUL,
+    SDIV,
     AND,
     OR,
     XOR,
