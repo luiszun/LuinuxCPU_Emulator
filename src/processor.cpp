@@ -69,6 +69,11 @@ void Processor::_FetchInstruction() {
 }
 
 void Processor::_DecodeInstruction() {
+
+#ifndef NDEBUG
+  auto decodedInstructionString = _InstructionToString(_fetchedInstruction);
+#endif
+
   _instructionStatus = InstructionCycle::Decode;
   if ((_decodedOpCodeId != OpCodeId::INVALID_INSTR) ||
       (_instructionArgs.size() > 0)) {
@@ -94,8 +99,10 @@ void Processor::_DecodeInstruction() {
   // If we couldn't find the opcode, then we got an invalid operation. Throw for
   // now. We still don't know how to handle these.
   if (_decodedOpCodeId == OpCodeId::INVALID_INSTR) {
+    // Create instruction string for debugging
+    std::string instrStr = _InstructionToString(_fetchedInstruction);
     throw std::runtime_error(
-        "Invalid instruction found in memory. Cannot decode");
+        "Invalid instruction found in memory. Cannot decode: " + instrStr);
   }
   _instructionArgs.resize(opCodeTable.at(_decodedOpCodeId).argCount);
 
@@ -242,14 +249,62 @@ Processor::_Get_MM(std::vector<std::shared_ptr<Register>> args) const {
 }
 
 void Processor::_Base_ADD(ConstantPair values, std::shared_ptr<Register> dest) {
-  dest->Write(values.first + values.second);
+  auto &a = values.first;
+  auto &b = values.second;
+  uint32_t result = static_cast<uint32_t>(a) + static_cast<uint32_t>(b);
+  dest->Write(static_cast<uint16_t>(result));
+
+  // Update flags
+  FlagsObject f(ReadRegister(RegisterId::RFL));
+  f.flags.Zero = (static_cast<uint16_t>(result) == 0) ? 1 : 0;
+  f.flags.Negative = (static_cast<uint16_t>(result) & 0x8000) ? 1 : 0;
+  f.flags.Carry = (result > 0xffff) ? 1 : 0;
+
+  // Overflow conditions:
+  // positive + positive = negative
+  // negative + negative = positive
+  // Compare their sign bits, if they're originally same and result in
+  // different, it overflowed
+  f.flags.Overflow = (~(a ^ b) & (a ^ result) & 0x8000) ? 1 : 0;
+
+  WriteRegister(RegisterId::RFL, f.value);
 }
 
 void Processor::_Base_SUB(ConstantPair values, std::shared_ptr<Register> dest) {
-  dest->Write(values.first - values.second);
+  auto &a = values.first;
+  auto &b = values.second;
+
+  int32_t result =
+      static_cast<int32_t>(values.first) - static_cast<int32_t>(values.second);
+  dest->Write(static_cast<uint16_t>(result));
+
+  // Update flags
+  FlagsObject f(ReadRegister(RegisterId::RFL));
+  f.flags.Zero = (static_cast<uint16_t>(result) == 0) ? 1 : 0;
+  f.flags.Negative = (static_cast<uint16_t>(result) & 0x8000) ? 1 : 0;
+  f.flags.Carry = (a < b) ? 1 : 0;
+
+  // Overflow conditions:
+  // positive - negative = negative
+  // negative - positive = positive
+  // Compare their sign bits, if they're originally different and result in
+  // different, it overflowed
+  f.flags.Overflow = ((a ^ b) & (a ^ result) & 0x8000) ? 1 : 0;
+
+  WriteRegister(RegisterId::RFL, f.value);
 }
 void Processor::_Base_MUL(ConstantPair values, std::shared_ptr<Register> dest) {
-  dest->Write(values.first * values.second);
+  uint32_t result = static_cast<uint32_t>(values.first) *
+                    static_cast<uint32_t>(values.second);
+  dest->Write(static_cast<uint16_t>(result));
+
+  // Update flags
+  FlagsObject f(ReadRegister(RegisterId::RFL));
+  f.flags.Zero = (static_cast<uint16_t>(result) == 0) ? 1 : 0;
+  f.flags.Negative = (static_cast<uint16_t>(result) & 0x8000) ? 1 : 0;
+  f.flags.Carry = (result > 0xffff) ? 1 : 0;
+  f.flags.Overflow = 0; // Overflow doesn't apply to unsigned multiplication
+  WriteRegister(RegisterId::RFL, f.value);
 }
 void Processor::_Base_DIV(ConstantPair values, std::shared_ptr<Register> dest) {
   if (values.second == 0) {
@@ -258,7 +313,16 @@ void Processor::_Base_DIV(ConstantPair values, std::shared_ptr<Register> dest) {
     WriteRegister(RegisterId::RFL, f.value);
     return;
   }
-  dest->Write(values.first / values.second);
+  uint16_t result = values.first / values.second;
+  dest->Write(result);
+
+  // Update flags
+  FlagsObject f(ReadRegister(RegisterId::RFL));
+  f.flags.Zero = (static_cast<uint16_t>(result) == 0) ? 1 : 0;
+  f.flags.Negative = (result & 0x8000) ? 1 : 0;
+  f.flags.Carry = 0;    // Division doesn't have carry
+  f.flags.Overflow = 0; // Overflow doesn't apply to unsigned division
+  WriteRegister(RegisterId::RFL, f.value);
 }
 void Processor::_Base_AND(ConstantPair values, std::shared_ptr<Register> dest) {
   dest->Write(values.first & values.second);
@@ -625,4 +689,54 @@ void Processor::SWM(std::vector<std::shared_ptr<Register>> args) {
 
 void Processor::JMP(std::vector<std::shared_ptr<Register>> args) {
   WriteRegister(RegisterId::RIP, _2wordOperand);
+}
+
+// Helper function to convert binary instruction to assembly string
+std::string Processor::_InstructionToString(uint16_t instruction) const {
+  // First, we need to determine the opcode
+  OpCodeId opcodeId = OpCodeId::INVALID_INSTR;
+
+  // Check for the longest match
+  // Try to find the opcode by checking different bit positions
+  for (uint16_t mask = 0xffff; mask > 0; mask <<= 1) {
+    uint16_t opCodeValue = instruction & mask;
+    auto shiftCount = std::countr_zero(mask);
+    opCodeValue >>= shiftCount;
+    if (opCodeValuesTable.count(opCodeValue) > 0) {
+      opcodeId = opCodeValuesTable.at(opCodeValue);
+      break;
+    }
+  }
+
+  if (opcodeId == OpCodeId::INVALID_INSTR) {
+    return "UNKNOWN_INSTR";
+  }
+
+  // Get the opcode information
+  const OpCode &opCodeInfo = opCodeTable.at(opcodeId);
+  std::string result = opCodeMnemonicTable.at(opcodeId);
+
+  // Add arguments
+  if (opCodeInfo.argCount > 0) {
+    result += " ";
+
+    // Special handling for SET and SET_M instructions which have a literal
+    if (opcodeId == OpCodeId::SET || opcodeId == OpCodeId::SET_M) {
+      // For SET instructions, we get the literal value from the next word
+      // We're going to put a VALUE placeholder for now
+      result += "VALUE";
+    } else {
+      for (int i = 0; i < opCodeInfo.argCount; ++i) {
+        if (i > 0) {
+          result += ", ";
+        }
+
+        uint16_t regValue =
+            (instruction >> (4 * (opCodeInfo.argCount - 1 - i))) & 0xf;
+        result += registerNameTable.at(regValue);
+      }
+    }
+  }
+
+  return result;
 }

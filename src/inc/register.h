@@ -21,7 +21,6 @@ enum class RegisterId : uint8_t {
   R8,
   R9,
   R10,
-  R11,
   END_OF_REGLIST
 };
 
@@ -31,7 +30,7 @@ enum class FlagsRegister : uint16_t {
   Negative = 0x0004,
   Trap = 0x0008,
   Reserved = 0x0010,
-  StackOverflow = 0x0020,
+  Overflow = 0x0020,
   Exception = 0x0040,
   Memory = 0x0080 // 0=SRAM, 1=NVRAM
 };
@@ -63,7 +62,7 @@ struct FlagsUnion {
   unsigned Negative : 1;
   unsigned Trap : 1;
   unsigned Reserved : 1;
-  unsigned StackOverflow : 1;
+  unsigned Overflow : 1;
   unsigned Exception : 1;
   unsigned Memory : 1;
 };

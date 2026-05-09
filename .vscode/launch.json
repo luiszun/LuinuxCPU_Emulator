@@ -1,26 +1,34 @@
 {
+	"version": "0.2.0",
 	"configurations": [
-	{
-		"name": "Test.exe Launch",
-		"type": "cppvsdbg",
-		"request": "launch",
-		"program": "C:/Users/japo/git/LuinuxCPU_Emulator/build/test/Test.exe",
-		"C:/Users/japo/git/LuinuxCPU_Emulator/build/test/Test.exe",args": [],
-		"stopAtEntry": false,
-		"cwd": "C:/Users/japo/git/LuinuxCPU_Emulator/build",
-		"environment": [],
-		"console": "internalConsole"
-	}, 
-	{
-		"name": "luinuxcpu.exe Launch",
-		"type": "cppvsdbg",
-		"request": "launch",
-		"program": "C:/Users/japo/git/LuinuxCPU_Emulator/build/src/luinuxcpu.exe",
-		"args": ["luinuxcpu_test.bin", "test_nvmemory.bin"],
-		"stopAtEntry": false,
-		"cwd": "C:/Users/japo/git/LuinuxCPU_Emulator/build",
-		"environment": [],
-		"console": "internalConsole"
-	}
+		{
+			"name": "Test Launch",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/build/test/Test",
+			"args": [],
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/build",
+			"environment": [],
+			"externalConsole": false,
+			"MIMode": "gdb",
+			"miDebuggerPath": "/usr/bin/gdb"
+		},
+		{
+			"name": "luinuxcpu Launch",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/build/src/luinuxcpu",
+			"args": [
+				"luinuxcpu_test.bin",
+				"test_nvmemory.bin"
+			],
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/build",
+			"environment": [],
+			"externalConsole": false,
+			"MIMode": "gdb",
+			"miDebuggerPath": "/usr/bin/gdb"
+		}
 	]
 }

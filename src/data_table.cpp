@@ -114,6 +114,43 @@ const std::unordered_map<std::string, OpCodeId> mnemonicTable = {
     {"TRAP", OpCodeId::TRAP},     {"SWM", OpCodeId::SWM},
     {"JMP", OpCodeId::JMP}};
 
+const std::unordered_map<OpCodeId, std::string> opCodeMnemonicTable = {
+    {OpCodeId::ADD, "ADD"},       {OpCodeId::SUB, "SUB"},
+    {OpCodeId::MUL, "MUL"},       {OpCodeId::DIV, "DIV"},
+    {OpCodeId::AND, "AND"},       {OpCodeId::OR, "OR"},
+    {OpCodeId::XOR, "XOR"},       {OpCodeId::JZ, "JZ"},
+    {OpCodeId::JNZ, "JNZ"},       {OpCodeId::MOV, "MOV"},
+    {OpCodeId::JE, "JE"},         {OpCodeId::JNE, "JNE"},
+    {OpCodeId::TSTB, "TSTB"},     {OpCodeId::SETZ, "SETZ"},
+    {OpCodeId::SETO, "SETO"},     {OpCodeId::SET, "SET"},
+    {OpCodeId::PUSH, "PUSH"},     {OpCodeId::POP, "POP"},
+    {OpCodeId::NOT, "NOT"},       {OpCodeId::SHFR, "SHFR"},
+    {OpCodeId::SHFL, "SHFL"},     {OpCodeId::INC, "INC"},
+    {OpCodeId::DEC, "DEC"},       {OpCodeId::NOP, "NOP"},
+    {OpCodeId::STOP, "STOP"},     {OpCodeId::ADD_RM, "ADD_RM"},
+    {OpCodeId::ADD_MR, "ADD_MR"}, {OpCodeId::ADD_MM, "ADD_MM"},
+    {OpCodeId::SUB_RM, "SUB_RM"}, {OpCodeId::SUB_MR, "SUB_MR"},
+    {OpCodeId::SUB_MM, "SUB_MM"}, {OpCodeId::MUL_RM, "MUL_RM"},
+    {OpCodeId::MUL_MR, "MUL_MR"}, {OpCodeId::MUL_MM, "MUL_MM"},
+    {OpCodeId::DIV_RM, "DIV_RM"}, {OpCodeId::DIV_MR, "DIV_MR"},
+    {OpCodeId::DIV_MM, "DIV_MM"}, {OpCodeId::AND_RM, "AND_RM"},
+    {OpCodeId::AND_MR, "AND_MR"}, {OpCodeId::AND_MM, "AND_MM"},
+    {OpCodeId::OR_RM, "OR_RM"},   {OpCodeId::OR_MR, "OR_MR"},
+    {OpCodeId::OR_MM, "OR_MM"},   {OpCodeId::XOR_RM, "XOR_RM"},
+    {OpCodeId::XOR_MR, "XOR_MR"}, {OpCodeId::XOR_MM, "XOR_MM"},
+    {OpCodeId::JZ_RM, "JZ_RM"},   {OpCodeId::JZ_MR, "JZ_MR"},
+    {OpCodeId::JZ_MM, "JZ_MM"},   {OpCodeId::JNZ_RM, "JNZ_RM"},
+    {OpCodeId::JNZ_MR, "JNZ_MR"}, {OpCodeId::JNZ_MM, "JNZ_MM"},
+    {OpCodeId::MOV_RM, "MOV_RM"}, {OpCodeId::MOV_MR, "MOV_MR"},
+    {OpCodeId::MOV_MM, "MOV_MM"}, {OpCodeId::TSTB_M, "TSTB_M"},
+    {OpCodeId::SETZ_M, "SETZ_M"}, {OpCodeId::SETO_M, "SETO_M"},
+    {OpCodeId::SET_M, "SET_M"},   {OpCodeId::PUSH_M, "PUSH_M"},
+    {OpCodeId::POP_M, "POP_M"},   {OpCodeId::NOT_M, "NOT_M"},
+    {OpCodeId::SHFR_M, "SHFR_M"}, {OpCodeId::SHFL_M, "SHFL_M"},
+    {OpCodeId::INC_M, "INC_M"},   {OpCodeId::DEC_M, "DEC_M"},
+    {OpCodeId::TRAP, "TRAP"},     {OpCodeId::SWM, "SWM"},
+    {OpCodeId::JMP, "JMP"}};
+
 const std::unordered_map<std::string, RegisterId> registerMap = {
     {"RAC", RegisterId::RAC}, {"RFL", RegisterId::RFL},
     {"RIP", RegisterId::RIP}, {"RSP", RegisterId::RSP},
@@ -123,8 +160,12 @@ const std::unordered_map<std::string, RegisterId> registerMap = {
     {"R5", RegisterId::R5},   {"R6", RegisterId::R6},
     {"R7", RegisterId::R7},   {"R8", RegisterId::R8},
     {"R9", RegisterId::R9},   {"R10", RegisterId::R10},
-    {"R11", RegisterId::R11}};
+};
 
+const std::array<std::string_view, 16> registerNameTable = {
+    "RAC", "RFL", "RIP", "RSP", "RBP", "R0", "R1", "R2",
+    "R3",  "R4",  "R5",  "R6",  "R7",  "R8", "R9", "R10",
+};
 const std::unordered_map<uint16_t, OpCodeId> opCodeValuesTable = {
     {0x0, OpCodeId::ADD},      {0x1, OpCodeId::SUB},
     {0x2, OpCodeId::MUL},      {0x3, OpCodeId::DIV},
