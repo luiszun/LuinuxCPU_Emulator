@@ -3,7 +3,7 @@
 #include <sstream>
 #include <vector>
 
-std::string HexEscapedString(const std::vector<uint8_t>& bytes)
+inline std::string HexEscapedString(const std::vector<uint8_t>& bytes)
 {
     std::ostringstream out;
 
