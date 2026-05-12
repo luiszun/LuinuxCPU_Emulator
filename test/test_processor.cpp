@@ -757,3 +757,29 @@ TEST(TestProcessorPrograms, TestJNE)
 
     ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 0xf00d);
 }
+
+using Memory16 = Memory<uint16_t>;
+
+TEST(TestProcessorPrograms, DivideByZeroException)
+{
+    Assembler asmObj;
+
+    std::string program =
+        "SET R1, h'0000 ; flags backup\n"
+        "SET R5, 2\n"
+        "SET R6, h'100\n"
+        "SET_M R6, 0\n"
+        "DIV_RM R5, R6\n"
+        "MOV RFL, R1\n"
+        "STOP\n";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    Processor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    FlagsObject f(cpu.ReadRegister(RegisterId::R1));
+    ASSERT_EQ(f.flags.Exception, 1);
+}
