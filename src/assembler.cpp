@@ -308,7 +308,6 @@ bool Assembler::_IsSpecialInstruction(OpCodeId opcodeId) const
     switch (opcodeId)
     {
         case OpCodeId::SET:
-        case OpCodeId::SET_M:
         case OpCodeId::JMP:
             return true;
         default:

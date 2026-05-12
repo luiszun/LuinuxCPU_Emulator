@@ -121,7 +121,7 @@ void Processor::_DecodeInstruction()
     }
     _instructionArgs.resize(opCodeTable.at(_decodedOpCodeId).argCount);
 
-    if ((_decodedOpCodeId == OpCodeId::SET) || _decodedOpCodeId == OpCodeId::SET_M)
+    if (_decodedOpCodeId == OpCodeId::SET)
     {
         _instructionArgs.resize(1);
         _instructionArgs[0] = static_cast<RegisterId>(_fetchedInstruction & 0xf);
@@ -154,43 +154,21 @@ void Processor::_ExecuteInstruction()
     // only reference those by OpCodeId
     typedef void (Processor::*OpFunction)(std::vector<std::shared_ptr<Register>>);
     static const std::unordered_map<OpCodeId, OpFunction> opCodeFunctionTable = {
-        {OpCodeId::ADD, &Processor::ADD},       {OpCodeId::SUB, &Processor::SUB},
-        {OpCodeId::MUL, &Processor::MUL},       {OpCodeId::SMUL, &Processor::SMUL},
-        {OpCodeId::DIV, &Processor::DIV},       {OpCodeId::SDIV, &Processor::SDIV},
-        {OpCodeId::AND, &Processor::AND},       {OpCodeId::OR, &Processor::OR},
-        {OpCodeId::XOR, &Processor::XOR},       {OpCodeId::JZ, &Processor::JZ},
-        {OpCodeId::JNZ, &Processor::JNZ},       {OpCodeId::MOV, &Processor::MOV},
-        {OpCodeId::JE, &Processor::JE},         {OpCodeId::JNE, &Processor::JNE},
-        {OpCodeId::TSTB, &Processor::TSTB},     {OpCodeId::SETZ, &Processor::SETZ},
-        {OpCodeId::SETO, &Processor::SETO},     {OpCodeId::SET, &Processor::SET},
-        {OpCodeId::PUSH, &Processor::PUSH},     {OpCodeId::POP, &Processor::POP},
-        {OpCodeId::NOT, &Processor::NOT},       {OpCodeId::SHFR, &Processor::SHFR},
-        {OpCodeId::SHFL, &Processor::SHFL},     {OpCodeId::INC, &Processor::INC},
-        {OpCodeId::DEC, &Processor::DEC},       {OpCodeId::NOP, &Processor::NOP},
-        {OpCodeId::STOP, &Processor::STOP},     {OpCodeId::ADD_RM, &Processor::ADD_RM},
-        {OpCodeId::ADD_MR, &Processor::ADD_MR}, {OpCodeId::ADD_MM, &Processor::ADD_MM},
-        {OpCodeId::SUB_RM, &Processor::SUB_RM}, {OpCodeId::SUB_MR, &Processor::SUB_MR},
-        {OpCodeId::SUB_MM, &Processor::SUB_MM}, {OpCodeId::MUL_RM, &Processor::MUL_RM},
-        {OpCodeId::MUL_MR, &Processor::MUL_MR}, {OpCodeId::MUL_MM, &Processor::MUL_MM},
-        {OpCodeId::DIV_RM, &Processor::DIV_RM}, {OpCodeId::DIV_MR, &Processor::DIV_MR},
-        {OpCodeId::DIV_MM, &Processor::DIV_MM},
-        {OpCodeId::SMUL_RM, &Processor::SMUL_RM}, {OpCodeId::SMUL_MR, &Processor::SMUL_MR}, {OpCodeId::SMUL_MM, &Processor::SMUL_MM},
-        {OpCodeId::SDIV_RM, &Processor::SDIV_RM}, {OpCodeId::SDIV_MR, &Processor::SDIV_MR}, {OpCodeId::SDIV_MM, &Processor::SDIV_MM},
-        {OpCodeId::AND_RM, &Processor::AND_RM}, {OpCodeId::AND_MR, &Processor::AND_MR}, {OpCodeId::AND_MM, &Processor::AND_MM},
-        {OpCodeId::OR_RM, &Processor::OR_RM},   {OpCodeId::OR_MR, &Processor::OR_MR},
-        {OpCodeId::OR_MM, &Processor::OR_MM},   {OpCodeId::XOR_RM, &Processor::XOR_RM},
-        {OpCodeId::XOR_MR, &Processor::XOR_MR}, {OpCodeId::XOR_MM, &Processor::XOR_MM},
-        {OpCodeId::JZ_RM, &Processor::JZ_RM},   {OpCodeId::JZ_MR, &Processor::JZ_MR},
-        {OpCodeId::JZ_MM, &Processor::JZ_MM},   {OpCodeId::JNZ_RM, &Processor::JNZ_RM},
-        {OpCodeId::JNZ_MR, &Processor::JNZ_MR}, {OpCodeId::JNZ_MM, &Processor::JNZ_MM},
-        {OpCodeId::MOV_RM, &Processor::MOV_RM}, {OpCodeId::MOV_MR, &Processor::MOV_MR},
-        {OpCodeId::MOV_MM, &Processor::MOV_MM}, {OpCodeId::TSTB_M, &Processor::TSTB_M},
-        {OpCodeId::SETZ_M, &Processor::SETZ_M}, {OpCodeId::SETO_M, &Processor::SETO_M},
-        {OpCodeId::SET_M, &Processor::SET_M},   {OpCodeId::PUSH_M, &Processor::PUSH_M},
-        {OpCodeId::POP_M, &Processor::POP_M},   {OpCodeId::NOT_M, &Processor::NOT_M},
-        {OpCodeId::SHFR_M, &Processor::SHFR_M}, {OpCodeId::SHFL_M, &Processor::SHFL_M},
-        {OpCodeId::INC_M, &Processor::INC_M},   {OpCodeId::DEC_M, &Processor::DEC_M},
-        {OpCodeId::TRAP, &Processor::TRAP},     {OpCodeId::SWM, &Processor::SWM}};
+        {OpCodeId::ADD, &Processor::ADD},   {OpCodeId::SUB, &Processor::SUB},
+        {OpCodeId::MUL, &Processor::MUL},   {OpCodeId::SMUL, &Processor::SMUL},
+        {OpCodeId::DIV, &Processor::DIV},   {OpCodeId::SDIV, &Processor::SDIV},
+        {OpCodeId::AND, &Processor::AND},   {OpCodeId::OR, &Processor::OR},
+        {OpCodeId::XOR, &Processor::XOR},   {OpCodeId::JZ, &Processor::JZ},
+        {OpCodeId::JNZ, &Processor::JNZ},   {OpCodeId::MOV, &Processor::MOV},
+        {OpCodeId::JE, &Processor::JE},     {OpCodeId::JNE, &Processor::JNE},
+        {OpCodeId::TSTB, &Processor::TSTB}, {OpCodeId::SETZ, &Processor::SETZ},
+        {OpCodeId::SETO, &Processor::SETO}, {OpCodeId::SET, &Processor::SET},
+        {OpCodeId::PUSH, &Processor::PUSH}, {OpCodeId::POP, &Processor::POP},
+        {OpCodeId::NOT, &Processor::NOT},   {OpCodeId::SHFR, &Processor::SHFR},
+        {OpCodeId::SHFL, &Processor::SHFL}, {OpCodeId::INC, &Processor::INC},
+        {OpCodeId::DEC, &Processor::DEC},   {OpCodeId::NOP, &Processor::NOP},
+        {OpCodeId::STOP, &Processor::STOP}, {OpCodeId::TRAP, &Processor::TRAP},
+        {OpCodeId::SWM, &Processor::SWM}};
     _instructionStatus = InstructionCycle::Execute;
     LuinuxAssert(_decodedOpCodeId != OpCodeId::INVALID_INSTR,
                  "We are about to execute a instruction that we were not able to decode");
@@ -218,24 +196,7 @@ ConstantPair Processor::_Get_RR(std::vector<std::shared_ptr<Register>> args) con
     auto opB = args.at(1)->Read();
     return std::make_pair(opA, opB);
 }
-ConstantPair Processor::_Get_MR(std::vector<std::shared_ptr<Register>> args) const
-{
-    auto opA = _DereferenceRegisterRead(args.at(0)->registerId);
-    auto opB = args.at(1)->Read();
-    return std::make_pair(opA, opB);
-}
-ConstantPair Processor::_Get_RM(std::vector<std::shared_ptr<Register>> args) const
-{
-    auto opA = args.at(0)->Read();
-    auto opB = _DereferenceRegisterRead(args.at(1)->registerId);
-    return std::make_pair(opA, opB);
-}
-ConstantPair Processor::_Get_MM(std::vector<std::shared_ptr<Register>> args) const
-{
-    auto opA = _DereferenceRegisterRead(args.at(0)->registerId);
-    auto opB = _DereferenceRegisterRead(args.at(1)->registerId);
-    return std::make_pair(opA, opB);
-}
+
 
 void Processor::_Base_ADD(ConstantPair values, std::shared_ptr<Register> dest)
 {
@@ -437,170 +398,6 @@ void Processor::XOR(std::vector<std::shared_ptr<Register>> args)
     auto vals = _Get_RR(args);
     _Base_XOR(vals, args.at(2));
 }
-void Processor::ADD_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MR(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_ADD(vals, racPtr);
-}
-void Processor::SUB_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MR(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_SUB(vals, racPtr);
-}
-void Processor::MUL_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MR(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_MUL(vals, racPtr);
-}
-void Processor::MUL_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_MUL(vals, racPtr);
-}
-void Processor::DIV_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MR(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_DIV(vals, racPtr);
-}
-void Processor::AND_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MR(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_AND(vals, racPtr);
-}
-void Processor::OR_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MR(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_OR(vals, racPtr);
-}
-void Processor::XOR_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MR(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_XOR(vals, racPtr);
-}
-void Processor::ADD_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_RM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_ADD(vals, racPtr);
-}
-void Processor::SUB_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_RM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_SUB(vals, racPtr);
-}
-void Processor::MUL_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_RM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_MUL(vals, racPtr);
-}
-void Processor::DIV_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_RM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_DIV(vals, racPtr);
-}
-
-void Processor::SMUL_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MR(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_SMUL(vals, racPtr);
-}
-void Processor::SMUL_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_RM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_SMUL(vals, racPtr);
-}
-void Processor::SMUL_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_SMUL(vals, racPtr);
-}
-
-void Processor::SDIV_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MR(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_SDIV(vals, racPtr);
-}
-void Processor::SDIV_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_RM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_SDIV(vals, racPtr);
-}
-void Processor::SDIV_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_SDIV(vals, racPtr);
-}
-void Processor::AND_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_RM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_AND(vals, racPtr);
-}
-void Processor::OR_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_RM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_OR(vals, racPtr);
-}
-void Processor::XOR_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_RM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_XOR(vals, racPtr);
-}
-void Processor::ADD_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_ADD(vals, racPtr);
-}
-void Processor::SUB_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_SUB(vals, racPtr);
-}
-void Processor::DIV_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_DIV(vals, racPtr);
-}
-void Processor::AND_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_AND(vals, racPtr);
-}
-void Processor::OR_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_OR(vals, racPtr);
-}
-void Processor::XOR_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto vals = _Get_MM(args);
-    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
-    _Base_XOR(vals, racPtr);
-}
 void Processor::JZ(std::vector<std::shared_ptr<Register>> args)
 {
     auto vals = _Get_RR(args);
@@ -704,108 +501,6 @@ void Processor::STOP(std::vector<std::shared_ptr<Register>> args)
     // args is not really used, but works for our table of ptrs to funcs.
     _instructionStatus = InstructionCycle::Halted;
 }
-void Processor::JZ_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    _Base_JZ(_Get_MR(args));
-}
-void Processor::JNZ_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    _Base_JNZ(_Get_MR(args));
-}
-void Processor::JNZ_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    _Base_JNZ(_Get_MM(args));
-}
-void Processor::JZ_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    _Base_JZ(_Get_RM(args));
-}
-void Processor::JZ_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    _Base_JZ(_Get_MM(args));
-}
-void Processor::JNZ_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    _Base_JNZ(_Get_RM(args));
-}
-void Processor::MOV_RM(std::vector<std::shared_ptr<Register>> args)
-{
-    auto opA = args.at(0)->Read();
-    _DereferenceRegisterWrite(args.at(1)->registerId, opA);
-}
-void Processor::MOV_MR(std::vector<std::shared_ptr<Register>> args)
-{
-    uint16_t opA = _DereferenceRegisterRead(args.at(0)->registerId);
-    auto opB = args.at(1);
-    opB->Write(opA);
-}
-void Processor::MOV_MM(std::vector<std::shared_ptr<Register>> args)
-{
-    uint16_t opA = _DereferenceRegisterRead(args.at(0)->registerId);
-    _DereferenceRegisterWrite(args.at(1)->registerId, opA);
-}
-void Processor::TSTB_M(std::vector<std::shared_ptr<Register>> args)
-{
-    auto opA = args.at(0)->Read();
-    auto opB = _DereferenceRegisterRead(args.at(1)->registerId);
-    bool isBitOn = opB & (1 << opA);
-    FlagsObject f(ReadRegister(RegisterId::RFL));
-    f.flags.Zero = (isBitOn) ? 1 : 0;
-    WriteRegister(RegisterId::RFL, f.value);
-}
-void Processor::SETZ_M(std::vector<std::shared_ptr<Register>> args)
-{
-    _DereferenceRegisterWrite(args.at(0)->registerId, 0x0);
-}
-void Processor::SETO_M(std::vector<std::shared_ptr<Register>> args)
-{
-    _DereferenceRegisterWrite(args.at(0)->registerId, 0xffff);
-}
-void Processor::SET_M(std::vector<std::shared_ptr<Register>> args)
-{
-    _DereferenceRegisterWrite(args.at(0)->registerId, _2wordOperand);
-}
-void Processor::PUSH_M(std::vector<std::shared_ptr<Register>> args)
-{
-    auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
-    auto& RSP = _registers.at(RegisterId::RSP);
-    _DereferenceRegisterWrite(RSP.registerId, derefA);
-
-    RSP.Write(RSP.Read() + 2);
-}
-void Processor::POP_M(std::vector<std::shared_ptr<Register>> args)
-{
-    auto& RSP = _registers.at(RegisterId::RSP);
-    RSP.Write(RSP.Read() - 2);
-
-    _DereferenceRegisterWrite(args.at(0)->registerId, _DereferenceRegisterRead(RSP.registerId));
-}
-void Processor::NOT_M(std::vector<std::shared_ptr<Register>> args)
-{
-    uint16_t derefA = _DereferenceRegisterRead(args.at(0)->registerId);
-    derefA = ~derefA;
-    _DereferenceRegisterWrite(args.at(0)->registerId, derefA);
-}
-void Processor::SHFR_M(std::vector<std::shared_ptr<Register>> args)
-{
-    auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
-    _DereferenceRegisterWrite(args.at(0)->registerId, derefA >> 1);
-}
-void Processor::SHFL_M(std::vector<std::shared_ptr<Register>> args)
-{
-    auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
-    _DereferenceRegisterWrite(args.at(0)->registerId, derefA << 1);
-}
-void Processor::INC_M(std::vector<std::shared_ptr<Register>> args)
-{
-    auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
-    _DereferenceRegisterWrite(args.at(0)->registerId, derefA + 1);
-}
-void Processor::DEC_M(std::vector<std::shared_ptr<Register>> args)
-{
-    auto derefA = _DereferenceRegisterRead(args.at(0)->registerId);
-    _DereferenceRegisterWrite(args.at(0)->registerId, derefA - 1);
-}
 void Processor::TRAP(std::vector<std::shared_ptr<Register>> args)
 {
     FlagsObject f(ReadRegister(RegisterId::RFL));
@@ -873,7 +568,7 @@ std::string Processor::_InstructionToString(uint16_t instruction) const
         result += " ";
 
         // Special handling for SET and SET_M instructions which have a literal
-        if (opcodeId == OpCodeId::SET || opcodeId == OpCodeId::SET_M)
+        if (opcodeId == OpCodeId::SET)
         {
             // For SET instructions, we get the literal value from the next word
             // We're going to put a VALUE placeholder for now
