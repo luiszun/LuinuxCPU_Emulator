@@ -507,6 +507,44 @@ void Processor::DIV_RM(std::vector<std::shared_ptr<Register>> args)
     std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
     _Base_DIV(vals, racPtr);
 }
+
+void Processor::SMUL_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MR(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_SMUL(vals, racPtr);
+}
+void Processor::SMUL_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_SMUL(vals, racPtr);
+}
+void Processor::SMUL_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_SMUL(vals, racPtr);
+}
+
+void Processor::SDIV_MR(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MR(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_SDIV(vals, racPtr);
+}
+void Processor::SDIV_RM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_RM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_SDIV(vals, racPtr);
+}
+void Processor::SDIV_MM(std::vector<std::shared_ptr<Register>> args)
+{
+    auto vals = _Get_MM(args);
+    std::shared_ptr racPtr = std::make_shared<Register>(_registers.at(RegisterId::RAC));
+    _Base_SDIV(vals, racPtr);
+}
 void Processor::AND_RM(std::vector<std::shared_ptr<Register>> args)
 {
     auto vals = _Get_RM(args);

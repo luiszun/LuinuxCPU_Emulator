@@ -114,6 +114,12 @@ class Processor
     void MUL_RM(std::vector<std::shared_ptr<Register>> args);
     void MUL_MR(std::vector<std::shared_ptr<Register>> args);
     void MUL_MM(std::vector<std::shared_ptr<Register>> args);
+    void SMUL_RM(std::vector<std::shared_ptr<Register>> args);
+    void SMUL_MR(std::vector<std::shared_ptr<Register>> args);
+    void SMUL_MM(std::vector<std::shared_ptr<Register>> args);
+    void SDIV_RM(std::vector<std::shared_ptr<Register>> args);
+    void SDIV_MR(std::vector<std::shared_ptr<Register>> args);
+    void SDIV_MM(std::vector<std::shared_ptr<Register>> args);
     void DIV_RM(std::vector<std::shared_ptr<Register>> args);
     void DIV_MR(std::vector<std::shared_ptr<Register>> args);
     void DIV_MM(std::vector<std::shared_ptr<Register>> args);

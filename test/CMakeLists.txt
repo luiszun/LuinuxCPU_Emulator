@@ -19,6 +19,7 @@ add_executable(Test
   test_assembler.cpp
   test_register.cpp
   test_alu_flags.cpp
+  test_smul_sdiv_variants.cpp
   test_processor.cpp
 )
 target_include_directories(Test PRIVATE ${SRC_INC_DIR})
