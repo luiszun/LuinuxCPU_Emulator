@@ -273,12 +273,16 @@ TEST(TestProcessorPrograms, TestNVRamWriting)
         topAddress -= 2;
     }
     std::string program =
-        "SWM\n"
+        " ; R0 will be used to store the address, R1 will be used to store the value to write\n"
+        "SWM ; Write to NVRAM\n"
         "SET R0, " +
         std::to_string(topAddress) +
         "\n"
+        "SET R1, 0\n"
+        "STOR R1, R0\n"
         "TRAP\n"
-        "SET R0, h'ffff\n"
+        "SET R1, h'ffff\n"
+        "STOR R1, R0\n"
         "TRAP\n"
         "SWM\n"
         "STOP\n";
