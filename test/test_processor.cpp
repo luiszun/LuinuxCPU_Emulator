@@ -388,4 +388,27 @@ TEST(TestProcessorPrograms, TestJNE)
     ASSERT_EQ(cpu.ReadRegister(RegisterId::RAC), 0xf00d);
 }
 
+TEST(TestProcessorPrograms, TestLOAD_STOR)
+{
+    Assembler asmObj;
+    std::string program =
+        "SET R0, h'1000 ; Set memory address in R0\n"
+        "SET R1, h'cafe ; Set value to store\n"
+        "STOR R1, R0 ; Store 0xcafe at address 0x1000\n"
+        "SET R2, 0 ; Clear R2\n"
+        "LOAD R0, R2 ; Load from address 0x1000 into R2\n"
+        "STOP";
+
+    auto binProgram = asmObj.AssembleString(program);
+
+    Memory16 programMemory(0x10000);
+    programMemory.WritePayload(0, binProgram);
+    TestProcessor cpu(programMemory);
+    cpu.ExecuteAll();
+
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R1), 0xcafe);
+    ASSERT_EQ(cpu.ReadRegister(RegisterId::R2), 0xcafe);
+    ASSERT_EQ(cpu.DereferenceRegisterRead(RegisterId::R0), 0xcafe);
+}
+
 using Memory16 = Memory<uint16_t>;

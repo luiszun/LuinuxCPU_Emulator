@@ -161,6 +161,7 @@ void Processor::_ExecuteInstruction()
         {OpCodeId::XOR, &Processor::XOR},   {OpCodeId::JZ, &Processor::JZ},
         {OpCodeId::JNZ, &Processor::JNZ},   {OpCodeId::MOV, &Processor::MOV},
         {OpCodeId::JE, &Processor::JE},     {OpCodeId::JNE, &Processor::JNE},
+        {OpCodeId::LOAD, &Processor::LOAD}, {OpCodeId::STOR, &Processor::STOR},
         {OpCodeId::TSTB, &Processor::TSTB}, {OpCodeId::SETZ, &Processor::SETZ},
         {OpCodeId::SETO, &Processor::SETO}, {OpCodeId::SET, &Processor::SET},
         {OpCodeId::PUSH, &Processor::PUSH}, {OpCodeId::POP, &Processor::POP},
@@ -196,7 +197,6 @@ ConstantPair Processor::_Get_RR(std::vector<std::shared_ptr<Register>> args) con
     auto opB = args.at(1)->Read();
     return std::make_pair(opA, opB);
 }
-
 
 void Processor::_Base_ADD(ConstantPair values, std::shared_ptr<Register> dest)
 {
@@ -429,6 +429,22 @@ void Processor::MOV(std::vector<std::shared_ptr<Register>> args)
     auto opA = args.at(0)->Read();
     auto opB = args.at(1);
     opB->Write(opA);
+}
+void Processor::LOAD(std::vector<std::shared_ptr<Register>> args)
+{
+    auto addressReg = args.at(0);
+    auto destReg = args.at(1);
+    uint16_t address = addressReg->Read();
+    uint16_t value = _mainMemory->Read16(address);
+    destReg->Write(value);
+}
+void Processor::STOR(std::vector<std::shared_ptr<Register>> args)
+{
+    auto srcReg = args.at(0);
+    auto addressReg = args.at(1);
+    uint16_t value = srcReg->Read();
+    uint16_t address = addressReg->Read();
+    _mainMemory->Write16(address, value);
 }
 void Processor::TSTB(std::vector<std::shared_ptr<Register>> args)
 {
